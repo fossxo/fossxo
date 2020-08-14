@@ -1,8 +1,8 @@
-# FossXO: Coming Soon!
+# FossXO
+
+![FossXO blueprint](blueprint.png)
 
 FossXO is a unique take on the classic game of tic-tac-toe.
-
-**Features:**
 
 * Over 20 beautiful environments including classic paper-and-pencil, modern
   computer screens, and futuristic cyber punk.
@@ -12,4 +12,5 @@ FossXO is a unique take on the classic game of tic-tac-toe.
 * Try speedrun mode for an additional challenge.
 * Free, open-source, and no annoying advertisements.
 
-![FossXO blueprint](blueprint.png)
+## License
+FossXO is free and open-source software distributed under the [MIT License](LICENSE-MIT) and the [Apache License 2.0](LICENSE-APACHE).

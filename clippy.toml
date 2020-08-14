@@ -1,0 +1,4 @@
+# Code Complete recommends a max cyclomatic complexity of 10. 
+# For situations where more complex code is needed please 
+# include a comment of why it is needed in that situation.
+cognitive-complexity-threshold = 10
