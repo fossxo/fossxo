@@ -1,0 +1,9 @@
+# Software Bill of Materials
+This page lists the licenses of the projects used in FossXO.
+
+| Name | Version | License |
+| ---- | ------- | ------- |
+{{#each licenses}}{{#each used_by~}}
+| [{{crate.name}}]({{#if crate.repository}} {{crate.repository}} {{else}} https://crates.io/crates/{{crate.name}} {{/if}}) | {{crate.version}} | [{{../name}}](library-licenses.html#{{crate.name}}-{{crate.version}})
+{{/each}}{{/each}}
+

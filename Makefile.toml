@@ -7,7 +7,7 @@
 [env]
 # By default do not include back trace info.
 RUST_BACKTRACE = { unset = true }
-
+CRATE_ROOT_DIR = "${CARGO_MAKE_WORKING_DIRECTORY}"
 
 [tasks.default]
 # The default task is to build and run the game for end users.
@@ -17,6 +17,7 @@ alias = "_user-build"
 [tasks._user-build]
 description = "Builds and runs the game in release mode."
 dependencies = [
+    "_build-user-manual",
     "_run-release",
 ]
 
@@ -59,6 +60,7 @@ dependencies = [
     "_clippy-strict",
     "_deny",
     "_fmt-check",
+    "_build-user-manual",
     "_test",
 ]
 
@@ -83,7 +85,9 @@ description = "Packages the application."
 alias = "_package"
 
 [tasks._package]
-dependencies = []
+dependencies = [
+    "_build-user-manual",
+]
 
 
 
@@ -171,3 +175,15 @@ args = ["tarpaulin", "--out", "Html"]
 [tasks._deny]
 command = "cargo"
 args = ["deny", "check"]
+
+
+[tasks._build-user-manual]
+command = "mdbook"
+install_crate = { crate_name = "mdbook", binary = "mdbook", test_arg = "--help" }
+args = ["build", "user-manual"]
+dependencies = ["_build-user-manual-license-files"]
+
+[tasks._build-user-manual-license-files]
+install_crate = { crate_name = "cargo-about", binary = "cargo-about", test_arg = "--help" }
+command = "cargo"
+args = ["run", "--bin", "generate-license"]

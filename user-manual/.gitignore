@@ -1,0 +1,3 @@
+# Ignore generated files
+src/library-licenses.md
+src/software-bom.md

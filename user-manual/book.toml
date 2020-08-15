@@ -1,0 +1,16 @@
+[book]
+authors = ["James Richey"]
+language = "en"
+multilingual = false
+src = "src"
+title = "FossXO User Manual"
+
+[build]
+build-dir = "../target/user-manual"
+create-missing = false
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "navy"
+mathjax-support = false
+additional-css = ["user-manual.css"]

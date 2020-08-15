@@ -1,0 +1,25 @@
+# Priority list of all the accepted licenses for this project.
+# Note: please keep this list syncrhonized with the allowed list in
+# deny.toml.
+accepted = [
+    # We default to the apache license.
+    "Apache-2.0",
+
+    # BSD type licenses.
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "MIT",
+    "FTL",
+    "ISC",
+    "Zlib",
+
+    # Other
+    "MPL-2.0",
+
+    # Public domain type licenses.
+    "Unlicense",
+    "CC0-1.0",
+]
+
+ignore-build-dependencies = true
+ignore-dev-dependencies = true

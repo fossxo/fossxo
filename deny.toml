@@ -28,6 +28,7 @@ ignore = [
 # https://embarkstudios.github.io/cargo-deny/checks/licenses/cfg.html
 [licenses]
 unlicensed = "deny"
+# Note: please keep this list synchronized with the accepted list in about.toml.
 allow = [
     "Apache-2.0",
     "MPL-2.0",
