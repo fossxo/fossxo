@@ -12,7 +12,6 @@ alias = "_user-build"
 [tasks._user-build]
 description = "Builds and runs the game in release mode."
 dependencies = [
-    "_build-release",
     "_run-release",
 ]
 
@@ -24,18 +23,16 @@ alias = "_dev"
 [tasks._dev]
 dependencies = [
     "_fmt",
-    "_build",
-    "_doc",
     "_test-quick",
-    "_coverage",
     "_clippy",
+    "_doc",
+    "_coverage",
+    "_deny",
 ]
 
 
 [tasks.test]
 description = "Runs the complete test suite."
-# Cargo make has a built in test task that does not meet our needs, thus an
-# alias is used to overwrite the builtin task.
 alias = "_test"
 
 [tasks._test]
@@ -43,6 +40,23 @@ dependencies = [
     "_build-release",
     "_test-quick-release",
     "_test-ignored-release",
+    "_deny",
+]
+
+
+[tasks.pr-check]
+description = "Helper for running checks before a pull request."
+alias = "_pr-check"
+
+[tasks._pr-check]
+# Run the strict checks and then complete test suite.
+dependencies = [
+    "_build-strict",
+    "_test-quick",
+    "_clippy-strict",
+    "_deny",
+    "_fmt-check",
+    "_test",
 ]
 
 
@@ -55,6 +69,7 @@ alias = "_ci"
 dependencies = [
     "_build-strict",
     "_test-quick",
+    "_deny",
     "_clippy-strict",
     "_fmt-check",
 ]
@@ -136,3 +151,7 @@ args = ["doc"]
 command = "cargo"
 args = ["tarpaulin", "--out", "Html"]
 
+
+[tasks._deny]
+command = "cargo"
+args = ["deny", "check"]

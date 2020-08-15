@@ -5,7 +5,7 @@ edition = "2018"
 authors = ["James Richey <james.richey+fossxo@imaginaryphase.com>"]
 license = "MIT OR Apache-2.0"
 
-description = "Free and open-source tic-tac-toe ."
+description = "Free and open-source tic-tac-toe."
 keywords = ["game", "tic-tac-toe"]
 categories = ["games"]
 
@@ -17,4 +17,4 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-
+structopt = "0.3"

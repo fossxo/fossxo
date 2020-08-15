@@ -18,8 +18,12 @@ cargo make dev
 # Run the complete test suite.
 cargo make test
 
-# Run the game.
+# Check the project before making a pull request.
+cargo make pr-check
+
+# Run the game (optionally in release mode)
 cargo run
+cargo run --release
 
 # Open the API documentation.
 cargo doc --open
@@ -93,10 +97,5 @@ guide provides additional details and examples for each of these items.
 
 
 ## Pull Requests
-When the change you worked on is complete please ensure the following commands
-run without warnings or errors before sending a pull request.
-
-```bash
-cargo make dev
-cargo make test
-```
+When the change you worked on is complete please ensure `cargo make pr-check`
+runs without warnings or errors before sending a pull request.
