@@ -11,6 +11,10 @@ jobs:
   allow_failures:
     - rust: nightly
 
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y install pkg-config openssl libasound2-dev cmake build-essential libfreetype6-dev libexpat1-dev libxcb-composite0-dev libssl-dev libx11-dev
+
 script:
   - which cargo-make || cargo install cargo-make
   - cargo make ci
