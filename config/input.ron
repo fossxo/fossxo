@@ -1,0 +1,8 @@
+(
+    axes: { },
+    actions: {
+        PlaceMarkAtMouse: [[Mouse(Left)]],
+        PlaceMark(0, 0): [[Key(Q)]],
+    },
+)
+

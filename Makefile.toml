@@ -4,6 +4,11 @@
 # High level tasks for different users
 # ====================================
 
+[env]
+# By default do not include back trace info.
+RUST_BACKTRACE = { unset = true }
+
+
 [tasks.default]
 # The default task is to build and run the game for end users.
 description = "Default task."
@@ -25,8 +30,6 @@ dependencies = [
     "_fmt",
     "_test-quick",
     "_clippy",
-    "_doc",
-    "_coverage",
     "_deny",
 ]
 
@@ -37,7 +40,7 @@ alias = "_test"
 
 [tasks._test]
 dependencies = [
-    "_build-release",
+    "_coverage",
     "_test-quick-release",
     "_test-ignored-release",
     "_deny",
@@ -127,19 +130,31 @@ args = ["test", "--release", "--", "--ignored"]
 [tasks._clippy]
 command = "cargo"
 args = ["clippy"]
+dependencies = ["_install-clippy"]
 
 [tasks._clippy-strict]
 command = "cargo"
 args = ["clippy", "--", "-D", "warnings"]
+dependencies = ["_install-clippy"]
+
+[tasks._install-clippy]
+ignore_errors = true
+install_crate = { rustup_component_name = "clippy", binary = "cargo-clippy", test_arg = "--help" }
 
 
 [tasks._fmt]
 command = "cargo"
 args = ["fmt"]
+dependencies = ["_install-rustfmt"]
 
 [tasks._fmt-check]
 command = "cargo"
 args = ["fmt", "--all", "--", "--check"]
+dependencies = ["_install-rustfmt"]
+
+[tasks._install-rustfmt]
+ignore_errors = true
+install_crate = { rustup_component_name = "rustfmt", binary = "rustfmt", test_arg = "--help" }
 
 
 [tasks._doc]

@@ -17,4 +17,13 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+log = "0.4"
 structopt = "0.3"
+open_ttt_lib = "0.2"
+serde = { version = "1", features = ["derive"] }
+
+[dependencies.amethyst]
+version = "0.15"
+default-features = false
+features = ["animation", "audio", "renderer", "vulkan"]
+# TODO add "no-slow-safety-checks" feature for release builds

@@ -17,7 +17,11 @@ vulnerability = "deny"
 unmaintained = "warn"
 yanked = "deny"
 notice = "warn"
-
+ignore = [
+    # Amethyst is using the unmaintained stb_truetype library. We acknowledge
+    # this issue and ignore the warning until Amethyst can be updated.
+    "RUSTSEC-2020-0020",
+]
 
 # This section is considered when running `cargo deny check licenses`
 # More documentation for the licenses section can be found here:
@@ -25,11 +29,20 @@ notice = "warn"
 [licenses]
 unlicensed = "deny"
 allow = [
-    "MIT",
     "Apache-2.0",
+    "MPL-2.0",
 
-    # We also allow the "unlicense" if a crate happens to be using that.
-    # "Unlicense",
+    # BSD type licenses.
+    "MIT",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "FTL",
+    "ISC",
+    "Zlib",
+
+    # Public domain type licenses.
+    "Unlicense",
+    "CC0-1.0",
 ]
 copyleft = "deny"
 default = "deny"
@@ -41,7 +54,9 @@ exceptions = []
 # More documentation about the 'bans' section can be found here:
 # https://embarkstudios.github.io/cargo-deny/checks/bans/cfg.html
 [bans]
-multiple-versions = "warn"
+# The Amethyst engine pulls in a lot of crates, some of them are duplicates,
+# e.g. the rand crate. Thus we do allow duplicates.
+multiple-versions = "allow"
 wildcards = "warn"
 highlight = "all"
 # List of crates that are allowed. Use with care!

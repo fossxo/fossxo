@@ -66,6 +66,9 @@ deliver a quality application. The game's full test suite can be run with:
 cargo make test
 ```
 
+If you are developing on Linux, a test coverage report is saved to
+ `tarpaulin-report.html`.
+
 ### Unit Tests
 When adding unit tests, they generally should conform to the following:
 
@@ -74,9 +77,6 @@ When adding unit tests, they generally should conform to the following:
 * The names following the format: unit of work **when** state under test **should** expected behavior.
 
 See the existing unit tests for examples.
-
-If you are developing on Linux, a unit test coverage report is saved to
- `tarpaulin-report.html`.
 
 
 ## Commits
