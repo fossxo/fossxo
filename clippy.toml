@@ -1,4 +1,7 @@
-# Code Complete recommends a max cyclomatic complexity of 10. 
+# clippy configuration file.
+# For a list of lint rules see https://rust-lang.github.io/rust-clippy/master/index.html
+
+# Code Complete recommends a max cyclomatic complexity of 10.
 # For situations where more complex code is needed please 
 # include a comment of why it is needed in that situation.
 cognitive-complexity-threshold = 10

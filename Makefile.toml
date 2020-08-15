@@ -105,6 +105,7 @@ env = { "RUSTFLAGS" = "-D warnings" }
 args = ["build"]
 
 
+# TODO add "no-slow-safety-checks" feature for release builds
 [tasks._build-release]
 command = "cargo"
 args = ["build", "--release"]

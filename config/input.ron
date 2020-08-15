@@ -2,7 +2,19 @@
     axes: { },
     actions: {
         PlaceMarkAtMouse: [[Mouse(Left)]],
-        PlaceMark(0, 0): [[Key(Q)]],
+
+        // The NUM pad on the and QWE keys are mapped to the tic-tac-toe grid.
+        // Note the top left is the origin of the tic-tac-toe grid.
+        PlaceMark(0, 0): [[Key(Numpad7)], [Key(Q)]],
+        PlaceMark(0, 1): [[Key(Numpad8)], [Key(W)]],
+        PlaceMark(0, 2): [[Key(Numpad9)], [Key(E)]],
+
+        PlaceMark(1, 0): [[Key(Numpad4)], [Key(A)]],
+        PlaceMark(1, 1): [[Key(Numpad5)], [Key(S)]],
+        PlaceMark(1, 2): [[Key(Numpad6)], [Key(D)]],
+
+        PlaceMark(2, 0): [[Key(Numpad1)], [Key(Z)]],
+        PlaceMark(2, 1): [[Key(Numpad2)], [Key(X)]],
+        PlaceMark(2, 2): [[Key(Numpad3)], [Key(C)]],
     },
 )
-

@@ -1,4 +1,8 @@
+# Ignore the build directory.
 /target
 
-# Ignore the test coverage report
+# Ignore the test coverage report.
 tarpaulin-report.html
+
+# IDE generated files.
+.idea

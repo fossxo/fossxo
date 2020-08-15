@@ -16,7 +16,10 @@ use amethyst::{
     ui::UiEvent,
     winit::Event as WindowEvent,
 };
+use open_ttt_lib as ttt;
 use serde::{Deserialize, Serialize};
+
+use crate::components::Player;
 
 /// Holds all the events that are sent to states.
 #[derive(Clone, Debug, EventReader)]
@@ -40,7 +43,9 @@ where
 
 /// Events caused by player actions.
 #[derive(Clone, Debug, PartialEq)]
-pub enum PlayerEvent {}
+pub enum PlayerEvent {
+    RequestMark(Player, ttt::game::Position),
+}
 
 /// Inputs for controller axis.
 #[derive(Clone, Debug, Hash, PartialEq, Eq, Serialize, Deserialize)]
