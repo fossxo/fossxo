@@ -1,0 +1,138 @@
+# This file controls how cargo-make runs.
+
+# ====================================
+# High level tasks for different users
+# ====================================
+
+[tasks.default]
+# The default task is to build and run the game for end users.
+description = "Default task."
+alias = "_user-build"
+
+[tasks._user-build]
+description = "Builds and runs the game in release mode."
+dependencies = [
+    "_build-release",
+    "_run-release",
+]
+
+
+[tasks.dev]
+description = "Runs the typical build, test, and check steps for developers."
+alias = "_dev"
+
+[tasks._dev]
+dependencies = [
+    "_fmt",
+    "_build",
+    "_doc",
+    "_test-quick",
+    "_coverage",
+    "_clippy",
+]
+
+
+[tasks.test]
+description = "Runs the complete test suite."
+# Cargo make has a built in test task that does not meet our needs, thus an
+# alias is used to overwrite the builtin task.
+alias = "_test"
+
+[tasks._test]
+dependencies = [
+    "_build-release",
+    "_test-quick-release",
+    "_test-ignored-release",
+]
+
+
+[tasks.ci]
+# Note: the CI steps treads all warnings as errors.
+description = "Rust the CI steps."
+alias = "_ci"
+
+[tasks._ci]
+dependencies = [
+    "_build-strict",
+    "_test-quick",
+    "_clippy-strict",
+    "_fmt-check",
+]
+
+
+[tasks.package]
+description = "Packages the application."
+alias = "_package"
+
+[tasks._package]
+dependencies = []
+
+
+
+# ==========================================
+# Individual build steps steps defined below
+# ==========================================
+# cargo-make ships with a large number of default tasks that are enabled by
+# default. The tasks defined here override the properties of the default tasks.
+# Therefore, custom tasks in  this file are prefixed with an underscore
+# prevent conflicts with the builtin tasks.
+
+[tasks._build]
+command = "cargo"
+args = ["build"]
+
+[tasks._build-strict]
+command = "cargo"
+env = { "RUSTFLAGS" = "-D warnings" }
+args = ["build"]
+
+
+[tasks._build-release]
+command = "cargo"
+args = ["build", "--release"]
+
+[tasks._run-release]
+command = "cargo"
+args = ["run", "--release"]
+
+
+[tasks._test-quick]
+command = "cargo"
+args = ["test"]
+
+[tasks._test-quick-release]
+command = "cargo"
+args = ["test", "--release"]
+
+[tasks._test-ignored-release]
+command = "cargo"
+args = ["test", "--release", "--", "--ignored"]
+
+
+[tasks._clippy]
+command = "cargo"
+args = ["clippy"]
+
+[tasks._clippy-strict]
+command = "cargo"
+args = ["clippy", "--", "-D", "warnings"]
+
+
+[tasks._fmt]
+command = "cargo"
+args = ["fmt"]
+
+[tasks._fmt-check]
+command = "cargo"
+args = ["fmt", "--all", "--", "--check"]
+
+
+[tasks._doc]
+command = "cargo"
+args = ["doc"]
+
+
+[tasks._coverage.linux]
+command = "cargo"
+args = ["tarpaulin", "--out", "Html"]
+

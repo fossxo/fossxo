@@ -1,1 +1,4 @@
 /target
+
+# Ignore the test coverage report
+tarpaulin-report.html
