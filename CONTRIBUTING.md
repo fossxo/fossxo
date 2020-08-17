@@ -57,6 +57,9 @@ being added to the library.
 Also, pull requests for adding, clarifying, or fixing typos in the
 documentation are always welcome.
 
+TODO: Install [Inno Setup](https://jrsoftware.org/isdl.php) on Windows.
+TODO: Add to path?
+
 
 ## Tests
 A goal of this project is to maintain excellent test coverage to ensure we

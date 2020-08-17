@@ -1,3 +1,6 @@
+// On windows do not show a console window.
+#![windows_subsystem = "windows"]
+
 mod components;
 mod constants;
 mod environments;
@@ -20,8 +23,8 @@ fn main() -> amethyst::Result<()> {
     log::info!("Started FossXO v{}.", constants::FOSSXO_VERSION);
 
     let app_root = application_root_dir()?;
-    let assets_dir = app_root.join("assets/");
-    let config_dir = app_root.join("config/");
+    let assets_dir = app_root.join("assets");
+    let config_dir = app_root.join("config");
 
     let game_data = GameDataBuilder::default()
         .with_bundle(TransformBundle::new())?

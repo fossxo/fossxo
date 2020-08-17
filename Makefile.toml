@@ -7,7 +7,10 @@
 [env]
 # By default do not include back trace info.
 RUST_BACKTRACE = { unset = true }
+FOSSXO_VERSION = "${CARGO_MAKE_PROJECT_VERSION}"
 CRATE_ROOT_DIR = "${CARGO_MAKE_WORKING_DIRECTORY}"
+FOSSXO_HOMEPAGE = "${CARGO_MAKE_CRATE_HOMEPAGE}"
+FOSSXO_DESCRIPTION = "${CARGO_MAKE_CRATE_DESCRIPTION}"
 
 [tasks.default]
 # The default task is to build and run the game for end users.
@@ -87,6 +90,8 @@ alias = "_package"
 [tasks._package]
 dependencies = [
     "_build-user-manual",
+    "_build-release",
+    "_build_package",
 ]
 
 
@@ -187,3 +192,9 @@ dependencies = ["_build-user-manual-license-files"]
 install_crate = { crate_name = "cargo-about", binary = "cargo-about", test_arg = "--help" }
 command = "cargo"
 args = ["run", "--bin", "generate-license"]
+
+
+[tasks._build_package.windows]
+command = "ISCC"
+args = ["packaging\\windows\\fossxo.iss"]
+
