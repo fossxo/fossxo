@@ -15,6 +15,16 @@ pub enum Player {
     O,
 }
 
+impl Player {
+    /// Gets the other, or opposite, of the current player.
+    pub fn opposite_player(&self) -> Self {
+        match self {
+            Self::X => Self::O,
+            Self::O => Self::X,
+        }
+    }
+}
+
 impl ecs::Component for Player {
     type Storage = ecs::DenseVecStorage<Self>;
 }
@@ -51,4 +61,27 @@ impl AiPlayer {
 
 impl ecs::Component for AiPlayer {
     type Storage = ecs::DenseVecStorage<Self>;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn player_opposite_player_when_x_should_be_o() {
+        let player = Player::X;
+
+        let opposite_player = player.opposite_player();
+
+        assert_eq!(opposite_player, Player::O);
+    }
+
+    #[test]
+    fn player_opposite_player_when_o_should_be_x() {
+        let player = Player::O;
+
+        let opposite_player = player.opposite_player();
+
+        assert_eq!(opposite_player, Player::X);
+    }
 }

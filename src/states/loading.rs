@@ -23,6 +23,8 @@ impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for Loading {
     ) -> Trans<GameData<'a, 'b>, events::StateEvent> {
         data.data.update(&data.world);
 
-        Trans::Switch(Box::new(states::Game::default()))
+        Trans::Switch(Box::new(states::Game::new(
+            states::GameStateOptions::default(),
+        )))
     }
 }

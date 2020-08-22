@@ -1,15 +1,67 @@
-use amethyst::{core::timing::Time, prelude::*};
+use amethyst::{core::ecs, core::timing::Time, prelude::*};
 use open_ttt_lib as ttt;
 
 use crate::components;
 use crate::events;
 use crate::resources;
 
+/// Holds the options for the game state.
+pub enum GameStateOptions {
+    /// Play a single player game with the provided difficulty and player mark.
+    SinglePlayer(ttt::ai::Difficulty, components::Player),
+
+    /// Play a multiplayer game.
+    Multiplayer,
+}
+
+impl Default for GameStateOptions {
+    fn default() -> Self {
+        Self::SinglePlayer(ttt::ai::Difficulty::Medium, components::Player::X)
+    }
+}
+
 /// Responsible for managing single-player and multiplayer games.
-#[derive(Default)]
-pub struct Game;
+pub struct Game {
+    options: GameStateOptions,
+    players: Vec<ecs::Entity>,
+}
 
 impl<'a, 'b> Game {
+    /// Creates a new game using the given the options.
+    pub fn new(options: GameStateOptions) -> Self {
+        Self {
+            options,
+            players: Vec::new(),
+        }
+    }
+
+    // Adds a local player to the world.
+    fn create_local_player(&mut self, world: &mut World, player: components::Player) {
+        let player_entity = world
+            .create_entity()
+            .with(player)
+            .with(components::LocalPlayer)
+            .build();
+
+        self.players.push(player_entity);
+    }
+
+    // Adds an AI player to the world.
+    fn create_ai_player(
+        &mut self,
+        world: &mut World,
+        player: components::Player,
+        difficulty: ttt::ai::Difficulty,
+    ) {
+        let ai_player_entity = world
+            .create_entity()
+            .with(player)
+            .with(components::AiPlayer::new(difficulty))
+            .build();
+
+        self.players.push(ai_player_entity);
+    }
+
     fn handle_player_event(
         &mut self,
         data: StateData<'_, GameData<'a, 'b>>,
@@ -37,36 +89,50 @@ impl<'a, 'b> Game {
 
 impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for Game {
     fn on_start(&mut self, data: StateData<'_, GameData<'a, 'b>>) {
-        log::info!("Started game.");
+        // Create the game's players based on the given options.
+        match self.options {
+            GameStateOptions::SinglePlayer(difficulty, player) => {
+                log::info!(
+                    "Started {:?} difficulty single-player game for player {:?}.",
+                    difficulty,
+                    player
+                );
+                self.create_local_player(data.world, player);
+                self.create_ai_player(data.world, player.opposite_player(), difficulty);
+            }
+            GameStateOptions::Multiplayer => {
+                log::info!("Started multiplayer game.");
+                self.create_local_player(data.world, components::Player::X);
+                self.create_local_player(data.world, components::Player::O);
+            }
+        };
 
         // New game data is created ensuring any leftover in progress games are
         // destroyed.
         let game = resources::GameData::default();
         data.world.insert(game);
-
-        // TODO: create players from the provided game settings.
-        data.world
-            .create_entity()
-            .with(components::Player::X)
-            .with(components::LocalPlayer)
-            .build();
-
-        // data.world
-        //     .create_entity()
-        //     .with(components::Player::O)
-        //     .with(components::LocalPlayer)
-        //     .build();
-
-        // TODO: example of an AI player.
-        data.world
-            .create_entity()
-            .with(components::Player::O)
-            .with(components::AiPlayer::new(ttt::ai::Difficulty::Hard))
-            .build();
     }
 
-    fn on_stop(&mut self, _data: StateData<'_, GameData<'a, 'b>>) {
-        log::info!("Ended game.");
+    fn on_stop(&mut self, data: StateData<'_, GameData<'a, 'b>>) {
+        // Remove entities we created from the world.
+        let result = data.world.delete_entities(self.players.as_slice());
+        if let Err(e) = result {
+            log::error!("Unable to delete player entities from game. Details: {}", e);
+        }
+
+        // Make a log entry of the game stopping.
+        match self.options {
+            GameStateOptions::SinglePlayer(difficulty, player) => {
+                log::info!(
+                    "Ended {:?} difficulty single-player game for player {:?}.",
+                    difficulty,
+                    player
+                );
+            }
+            GameStateOptions::Multiplayer => {
+                log::info!("Ended multiplayer game.");
+            }
+        }
     }
 
     fn handle_event(
