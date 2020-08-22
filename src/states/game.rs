@@ -1,8 +1,10 @@
-use amethyst::{core::ecs, core::timing::Time, prelude::*};
+use amethyst::{core::ecs, core::timing::Time, prelude::*, ui::UiCreator};
 use contracts::*;
 use open_ttt_lib as ttt;
 
 use crate::components;
+use crate::environments;
+use crate::environments::Environment;
 use crate::events;
 use crate::resources;
 
@@ -28,6 +30,9 @@ impl Default for GameStateOptions {
 pub struct Game {
     options: GameStateOptions,
     players: Vec<ecs::Entity>,
+    dbg_env: Option<environments::DebugEnvironment>,
+    // The UI root entity.
+    ui_root: Option<ecs::Entity>,
 }
 
 impl<'a, 'b> Game {
@@ -36,6 +41,8 @@ impl<'a, 'b> Game {
         Self {
             options,
             players: Vec::new(),
+            dbg_env: None,
+            ui_root: None,
         }
     }
 
@@ -81,20 +88,42 @@ impl<'a, 'b> Game {
         data: StateData<'_, GameData<'a, 'b>>,
         player_event: events::PlayerEvent,
     ) -> Trans<GameData<'a, 'b>, events::StateEvent> {
-        let events::PlayerEvent::RequestMark(player, position) = player_event;
-        let mut game_data = data.world.fetch_mut::<resources::GameData>();
+        let mark_added = {
+            let events::PlayerEvent::RequestMark(player, position) = player_event;
+            let mut game_logic = data.world.fetch_mut::<resources::GameLogic>();
 
-        // Before doing the move, ensure it is the player's turn and the position selected is valid.
-        if game_data.game.can_move(position) && game_data.is_players_move(&player) {
-            // Update the game with the player's position and let systems know the time of this update.
-            game_data.game.do_move(position).unwrap();
-            game_data.last_move_time = data.world.fetch::<Time>().absolute_time();
+            // Before doing the move, ensure it is the player's turn and the position selected is valid.
+            if game_logic.game.can_move(position) && game_logic.is_players_move(&player) {
+                // Update the game with the player's position and let systems know the time of this update.
+                game_logic.game.do_move(position).unwrap();
+                game_logic.last_move_time = data.world.fetch::<Time>().absolute_time();
 
-            // TODO: Update the display.
-            // TODO: check for game over?
-            println!("Player: {:?} moved to position {:?}", player, position);
-            println!("\n{}\n", game_data.game.board());
-            println!("Game state: {:?}", game_data.game.state());
+                // TODO: Update the display.
+                // TODO: check for game over?
+                println!("Player: {:?} moved to position {:?}", player, position);
+                println!("\n{}\n", game_logic.game.board());
+                println!("Game state: {:?}", game_logic.game.state());
+
+                Some((
+                    components::Mark {
+                        position,
+                        owner: player,
+                    },
+                    game_logic.game.state(),
+                ))
+            } else {
+                None
+            }
+        };
+
+        if let Some((mark, state)) = mark_added {
+            self.dbg_env.as_mut().unwrap().add_mark(data.world, &mark);
+            if state.is_game_over() {
+                self.dbg_env
+                    .as_mut()
+                    .unwrap()
+                    .game_over(data.world, environments::OutcomeAffinity::Neutral);
+            }
         }
 
         Trans::None
@@ -124,8 +153,20 @@ impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for Game {
 
         // New game data is created ensuring any leftover in progress games are
         // destroyed.
-        let game = resources::GameData::default();
-        data.world.insert(game);
+        let game_logic = resources::GameLogic::default();
+        data.world.insert(game_logic);
+
+        // TODO: Create an environment. Note! this has to occure after replacing the game resource.
+        self.dbg_env = Some(environments::DebugEnvironment::default());
+        self.dbg_env
+            .as_mut()
+            .unwrap()
+            .create(data.world, environments::EnvironmentOptions::default());
+
+        self.ui_root = Some(
+            data.world
+                .exec(|mut creator: UiCreator<'_>| creator.create("ui/menu.ron", ())),
+        );
     }
 
     #[post(self.players.is_empty())]

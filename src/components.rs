@@ -38,6 +38,7 @@ impl ecs::Component for LocalPlayer {
     type Storage = ecs::NullStorage<Self>;
 }
 
+/// The AI component provides the underlying AI opponent to use when selecting positions.
 pub struct AiPlayer {
     /// The underlying AI opponent that performs the actual move logic.
     pub ai_opponent: ttt::ai::Opponent,
@@ -47,19 +48,32 @@ pub struct AiPlayer {
     /// The move delay allows the game to simulate the AI taking time to think
     /// of where to place its mark. Otherwise, the AI would instantly choose a
     /// location.
-    pub move_delay: core::time::Duration,
+    pub move_delay: std::time::Duration,
 }
 
 impl AiPlayer {
     pub fn new(difficulty: ttt::ai::Difficulty) -> Self {
         Self {
             ai_opponent: ttt::ai::Opponent::new(difficulty),
-            move_delay: core::time::Duration::new(0, 0),
+            move_delay: std::time::Duration::new(0, 0),
         }
     }
 }
 
 impl ecs::Component for AiPlayer {
+    type Storage = ecs::DenseVecStorage<Self>;
+}
+
+/// The Mark component indicates the owner of a given position on the board.
+pub struct Mark {
+    /// The owner of the mark.
+    pub owner: Player,
+
+    /// The position of the mark.
+    pub position: ttt::game::Position,
+}
+
+impl ecs::Component for Mark {
     type Storage = ecs::DenseVecStorage<Self>;
 }
 

@@ -1189,6 +1189,7 @@ name = "fossxo"
 version = "0.1.0"
 dependencies = [
  "amethyst",
+ "approx 0.3.2",
  "contracts",
  "log",
  "open_ttt_lib",

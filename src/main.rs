@@ -1,6 +1,8 @@
 mod components;
 mod constants;
+mod environments;
 mod events;
+mod math;
 mod resources;
 mod states;
 mod systems;
@@ -37,7 +39,8 @@ fn main() -> amethyst::Result<()> {
                         .with_clear([0.0, 0.0, 0.0, 1.0]),
                 )
                 .with_plugin(ui::RenderUi::default())
-                .with_plugin(renderer::RenderFlat2D::default()),
+                .with_plugin(renderer::RenderFlat2D::default())
+                .with_plugin(renderer::RenderDebugLines::default()),
         )?;
 
     let mut game = CoreApplication::<_, events::StateEvent, events::StateEventReader>::build(
