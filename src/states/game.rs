@@ -1,9 +1,13 @@
 use amethyst::{core::ecs, core::timing::Time, prelude::*};
+use contracts::*;
 use open_ttt_lib as ttt;
 
 use crate::components;
 use crate::events;
 use crate::resources;
+
+// Number of players the game expects to work with.
+const NUM_PLAYERS: usize = 2;
 
 /// Holds the options for the game state.
 pub enum GameStateOptions {
@@ -62,6 +66,16 @@ impl<'a, 'b> Game {
         self.players.push(ai_player_entity);
     }
 
+    // Deletes all players from the game.
+    fn delete_payers(&mut self, world: &mut World) {
+        let result = world.delete_entities(self.players.as_slice());
+        if let Err(e) = result {
+            log::error!("Unable to delete player entities from game. Details: {}", e);
+        }
+        self.players.clear();
+    }
+
+    // Updates the game based on the player event.
     fn handle_player_event(
         &mut self,
         data: StateData<'_, GameData<'a, 'b>>,
@@ -88,6 +102,7 @@ impl<'a, 'b> Game {
 }
 
 impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for Game {
+    #[post(self.players.len() == NUM_PLAYERS)]
     fn on_start(&mut self, data: StateData<'_, GameData<'a, 'b>>) {
         // Create the game's players based on the given options.
         match self.options {
@@ -113,12 +128,10 @@ impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for Game {
         data.world.insert(game);
     }
 
+    #[post(self.players.is_empty())]
     fn on_stop(&mut self, data: StateData<'_, GameData<'a, 'b>>) {
         // Remove entities we created from the world.
-        let result = data.world.delete_entities(self.players.as_slice());
-        if let Err(e) = result {
-            log::error!("Unable to delete player entities from game. Details: {}", e);
-        }
+        self.delete_payers(data.world);
 
         // Make a log entry of the game stopping.
         match self.options {

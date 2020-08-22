@@ -706,6 +706,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "245097e9a4535ee1e3e3931fcfcd55a796a44c643e8596ff6566d68f09b87bbc"
 
 [[package]]
+name = "contracts"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "730b7cefe8f7e0826d0efb633ab373b85d0fb97c7d83942a0e70911a0e62f505"
+dependencies = [
+ "proc-macro2 1.0.19",
+ "quote 1.0.7",
+ "syn 1.0.38",
+]
+
+[[package]]
 name = "core-foundation"
 version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1178,6 +1189,7 @@ name = "fossxo"
 version = "0.1.0"
 dependencies = [
  "amethyst",
+ "contracts",
  "log",
  "open_ttt_lib",
  "serde",

@@ -48,6 +48,8 @@ fn main() -> amethyst::Result<()> {
     .build(game_data)?;
 
     game.run();
+
+    log::info!("Thanks for playing FossXO.");
     Ok(())
 }
 
