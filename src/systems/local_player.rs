@@ -32,31 +32,59 @@ impl<'a> System<'a> for LocalPlayerSystem {
         (players, local_players, input, game_data, grid, mut channel): Self::SystemData,
     ) {
         for (player, _) in (&players, &local_players).join() {
-            // Check if the key corresponding to a specific position is being pressed.
-            for (position, _owner) in game_data.game.board().iter() {
-                let request_move_at_position = input
-                    .action_is_down(&position_to_action_binding(&position))
-                    .unwrap_or(false);
-                if request_move_at_position {
-                    channel.single_write(PlayerEvent::RequestMark(*player, position));
+            // Only allow player's whose turn it is to generate player events.
+            if game_data.is_players_move(player) {
+                // Process the keyboard and mouse input for the player.
+                if let Some(player_event) = process_keyboard_input(player, &game_data, &input) {
+                    channel.single_write(player_event);
                 }
-            }
-
-            // Check if the player is requesting a move be placed at the mouse cursor.
-            if input
-                .action_is_down(&ActionBinding::PlaceMarkAtMouse)
-                .unwrap_or(false)
-            {
-                if let Some(mouse_position) = input.mouse_position() {
-                    let position = grid.position(&mouse_position);
-                    channel.single_write(PlayerEvent::RequestMark(*player, position));
+                if let Some(player_event) = process_mouse_input(player, &grid, &input) {
+                    channel.single_write(player_event);
                 }
             }
         }
     }
 }
 
-/// Converts the provided position to an action binding.
+fn process_keyboard_input(
+    player: &Player,
+    game_data: &GameData,
+    input: &InputHandler<InputBindingTypes>,
+) -> Option<PlayerEvent> {
+    // Check if the key corresponding to a specific position is being pressed, returning
+    // a player event corresponding to that position.
+    for (position, _owner) in game_data.game.board().iter() {
+        let request_move_at_position = input
+            .action_is_down(&position_to_action_binding(&position))
+            .unwrap_or(false);
+        if request_move_at_position {
+            return Some(PlayerEvent::RequestMark(*player, position));
+        }
+    }
+
+    None
+}
+
+fn process_mouse_input(
+    player: &Player,
+    grid: &Grid,
+    input: &InputHandler<InputBindingTypes>,
+) -> Option<PlayerEvent> {
+    // Check if the player is requesting a move be placed at the mouse cursor.
+    if input
+        .action_is_down(&ActionBinding::PlaceMarkAtMouse)
+        .unwrap_or(false)
+    {
+        if let Some(mouse_position) = input.mouse_position() {
+            let position = grid.position(&mouse_position);
+            return Some(PlayerEvent::RequestMark(*player, position));
+        }
+    }
+
+    None
+}
+
+// Converts the provided position to an action binding.
 fn position_to_action_binding(position: &ttt::game::Position) -> ActionBinding {
     ActionBinding::PlaceMark(position.row, position.column)
 }

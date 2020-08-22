@@ -49,7 +49,7 @@ fn main() -> amethyst::Result<()> {
 
     game.run();
 
-    log::info!("Thanks for playing FossXO.");
+    log::info!("Thanks for playing FossXO!");
     Ok(())
 }
 
