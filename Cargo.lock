@@ -1199,6 +1199,7 @@ dependencies = [
  "contracts",
  "log",
  "open_ttt_lib",
+ "os_info",
  "serde",
  "structopt",
 ]
@@ -2076,6 +2077,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3741934be594d77de1c8461ebcbbe866f585ea616a9753aa78f2bdc69f0e4579"
 dependencies = [
  "num-traits 0.2.12",
+]
+
+[[package]]
+name = "os_info"
+version = "2.0.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2cc1b4330bb29087e791ae2a5cf56be64fb8946a4ff5aec2ba11c6ca51f5d60"
+dependencies = [
+ "log",
+ "winapi",
 ]
 
 [[package]]

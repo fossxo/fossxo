@@ -23,6 +23,7 @@ log = "0.4"
 structopt = "0.3"
 open_ttt_lib = "0.2"
 serde = { version = "1", features = ["derive"] }
+os_info = { version = "2.0", default-features = false }
 
 [dependencies.amethyst]
 version = "0.15"

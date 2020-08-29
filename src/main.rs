@@ -21,6 +21,7 @@ fn main() -> amethyst::Result<()> {
     let _args = CliArgs::from_args();
     amethyst::start_logger(Default::default());
     log::info!("Started FossXO v{}.", constants::FOSSXO_VERSION);
+    log::info!("Operating system: {}", os_info::get());
 
     let app_root = application_root_dir()?;
     let assets_dir = app_root.join("assets");
