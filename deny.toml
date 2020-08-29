@@ -18,9 +18,10 @@ unmaintained = "warn"
 yanked = "deny"
 notice = "warn"
 ignore = [
-    # Amethyst is using the unmaintained stb_truetype library. We acknowledge
-    # this issue and ignore the warning until Amethyst can be updated.
-    "RUSTSEC-2020-0020",
+    # Amethyst is using some unmaintained libraies. We acknowledge
+    # this issue and ignore these warnings until Amethyst can be updated.
+    "RUSTSEC-2020-0020",    # stb_truetype
+    "RUSTSEC-2020-0036",    # failure
 ]
 
 # This section is considered when running `cargo deny check licenses`
