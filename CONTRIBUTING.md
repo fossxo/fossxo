@@ -29,24 +29,65 @@ cargo run --release
 cargo doc --open
 ```
 
+Useful web links:
+* [Game Design Document](https://fossxo.github.io/gdd/)
+* [Amethyst Documentation](https://book-src.amethyst.rs/master/)
+
 
 ## Getting Started
+
+### 1. Install Rust
 This library is developed using the [Rust programming language](https://www.rust-lang.org/).
-Install Rust then do the following to perform a development build of the game:
+Install Rust on your platform per the instructions on the Rust website.
+
+If you are new to Rust, [The Rust Programming Language](https://doc.rust-lang.org/stable/book/)
+book is a great place to start learning about the language.
+
+### 2. Install Platform Specific Tools
+
+#### Windows
+[Inno Setup](https://jrsoftware.org/isdl.php) is used to package the game on Windows.
+Install the latest stable release of Inno Setup. The extra tools such as
+QuickStart Pack are not needed.
+
+Finally, add the location where you installed Inno Setup to your path.
+When finished you should be able to run it from the command line,
+for example:
 
 ```bash
-# Install the required build tools.
-cargo install cargo-make
+> ISCC /?
+Inno Setup 6 Command-Line Compiler
+```
 
+#### Ubuntu / Debian
+Install the following packages:
+
+```bash
+# apt install gcc pkg-config openssl libasound2-dev cmake \
+    build-essential python3 libfreetype6-dev libexpat1-dev \
+    libxcb-composite0-dev libssl-dev libx11-dev
+```
+
+
+### 3. Install Common Tools
+Install the `cargo-make` utility using `cargo`:
+
+```bash
+cargo install cargo-make
+```
+
+### 4. Build the Game
+Finally, you can build the game:
+```
 # Build the game, user manual, and run the quick tests.
 cargo make dev
 ```
 
-It can take a while for the first build to complete. Once the build is finished
-and the tests should pass and you are ready to start modifying code.
+It can take a while for the first build to complete. Additional Rust
+packages and tools are downloaded and built during this porcess.
+Once the build is finished and the tests pass you are ready to
+start modifying code.
 
-If you are new to Rust, [The Rust Programming Language](https://doc.rust-lang.org/stable/book/)
-book is a great place to start learning about the language.
 
 ## What to Work On
 Feel free to take a look at the issue tracker for tasks and bugs to tackle.
@@ -57,8 +98,11 @@ being added to the library.
 Also, pull requests for adding, clarifying, or fixing typos in the
 documentation are always welcome.
 
-TODO: Install [Inno Setup](https://jrsoftware.org/isdl.php) on Windows.
-TODO: Add to path?
+
+## Game Design Document
+You might find the [game design document](https://fossxo.github.io/gdd/)
+useful when working on this game. It provides the overall vision of the
+game and describes a high level overview of the game's technical design.
 
 
 ## Tests
@@ -69,7 +113,7 @@ deliver a quality application. The game's full test suite can be run with:
 cargo make test
 ```
 
-If you are developing on Linux, a test coverage report is saved to
+If you are developing on Linux, the test coverage report is saved as
  `tarpaulin-report.html`.
 
 ### Unit Tests

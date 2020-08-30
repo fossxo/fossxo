@@ -34,7 +34,7 @@ Source: "{#PROJECT_DIR}\config\*"; DestDir: "{app}\config"; Flags: ignoreversion
 ; Source: "{#PROJECT_DIR}\assets\*"; DestDir: "{app}\assets"; Flags: ignoreversion recursesubdirs
 
 ; User manual files
-; Source: "{#TARGET_DIR}\user-manual\*"; DestDir: "{app}\user-manual"; Flags: ignoreversion recursesubdirs
+Source: "{#TARGET_DIR}\user-manual\*"; DestDir: "{app}\user-manual"; Flags: ignoreversion recursesubdirs
 
 [Icons]
 Name: "{group}\{#NAME}"; Filename: "{app}\{#EXE_NAME}"; Comment: "{#DESCRIPTION}"
