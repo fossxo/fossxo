@@ -1,4 +1,7 @@
-// On windows do not show a console window.
+// Only safe code is allowed in this application.
+#![forbid(unsafe_code)]
+// On Windows do not show a console window.
+// Note: this also suppresses output from the unit tests.
 #![windows_subsystem = "windows"]
 
 mod components;
