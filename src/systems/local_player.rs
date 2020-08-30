@@ -85,3 +85,18 @@ fn process_mouse_input(
 fn position_to_action_binding(position: &ttt::game::Position) -> ActionBinding {
     ActionBinding::PlaceMark(position.row, position.column)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn position_to_action_binding_should_put_row_then_column() {
+        let position = ttt::game::Position { row: 7, column: 11 };
+        let expected_action_binding = ActionBinding::PlaceMark(position.row, position.column);
+
+        let actual_action_binding = position_to_action_binding(&position);
+
+        assert_eq!(actual_action_binding, expected_action_binding);
+    }
+}

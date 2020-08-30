@@ -51,18 +51,37 @@ impl<'a> System<'a> for MouseRaycastSystem {
                 .and_then(|a| camera_join.get(a, &entities))
                 .or_else(|| camera_join.next())
             {
-                let screen_point = ScreenPoint::from(mouse);
-                let world_point = camera.screen_to_world_point(
-                    Point3::new(screen_point.x, screen_point.y, 0.0),
-                    screen_dimensions.diagonal(),
-                    &camera_transform,
+                update_mouse_position(
+                    &mut mouse_position,
+                    &screen_dimensions,
+                    &grid,
+                    mouse,
+                    camera,
+                    camera_transform,
                 );
-                let grid_position = grid.point_to_position(world_point);
-
-                mouse_position.screen = screen_point;
-                mouse_position.world = world_point;
-                mouse_position.grid = grid_position;
             }
         }
     }
+}
+
+// Updates the provided mouse position using available data.
+fn update_mouse_position(
+    mouse_position: &mut MousePosition,
+    screen_dimensions: &ScreenDimensions,
+    grid: &Grid,
+    mouse: (f32, f32),
+    camera: &Camera,
+    camera_transform: &Transform,
+) {
+    let screen_point = ScreenPoint::from(mouse);
+    let world_point = camera.screen_to_world_point(
+        Point3::new(screen_point.x, screen_point.y, 0.0),
+        screen_dimensions.diagonal(),
+        &camera_transform,
+    );
+    let grid_position = grid.point_to_position(world_point);
+
+    mouse_position.screen = screen_point;
+    mouse_position.world = world_point;
+    mouse_position.grid = grid_position;
 }
