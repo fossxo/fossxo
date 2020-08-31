@@ -8,7 +8,7 @@ use crate::components;
 /// destroying entities as the game progresses.
 pub trait Environment {
     /// Creates the initial set of entities in the environment.
-    fn create(&mut self, world: &mut World, options: EnvironmentOptions);
+    fn create(&mut self, world: &mut World);
 
     /// Deletes all entities from the environment.
     fn delete(&mut self, world: &mut World);
@@ -18,6 +18,9 @@ pub trait Environment {
 
     /// Shows the game over related entities.
     fn game_over(&mut self, world: &mut World, outcome: OutcomeAffinity);
+
+    /// Indicates if the environment is alive, that is has at least one entity.
+    fn is_alive(&self) -> bool;
 }
 
 /// Holds environment related options.

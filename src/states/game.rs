@@ -3,10 +3,13 @@ use contracts::*;
 use open_ttt_lib as ttt;
 
 use crate::components;
-use crate::environments;
-use crate::environments::Environment;
+// use crate::environments;
+use crate::environments::*;
 use crate::events;
 use crate::resources;
+use amethyst::core::ecs::LazyUpdate;
+use std::borrow::BorrowMut;
+use std::ops::DerefMut;
 
 // Number of players the game expects to work with.
 const NUM_PLAYERS: usize = 2;
@@ -30,7 +33,6 @@ impl Default for GameStateOptions {
 pub struct Game {
     options: GameStateOptions,
     players: Vec<ecs::Entity>,
-    dbg_env: Option<environments::DebugEnvironment>,
     // The UI root entity.
     ui_root: Option<ecs::Entity>,
 }
@@ -41,7 +43,6 @@ impl<'a, 'b> Game {
         Self {
             options,
             players: Vec::new(),
-            dbg_env: None,
             ui_root: None,
         }
     }
@@ -117,12 +118,17 @@ impl<'a, 'b> Game {
         };
 
         if let Some((mark, state)) = mark_added {
-            self.dbg_env.as_mut().unwrap().add_mark(data.world, &mark);
-            if state.is_game_over() {
-                self.dbg_env
-                    .as_mut()
-                    .unwrap()
-                    .game_over(data.world, environments::OutcomeAffinity::Neutral);
+            let mut environments = { data.world.write_resource::<Option<Environments>>().take() };
+
+            if let Some(mut environments) = environments {
+                environments.add_mark(data.world, &mark);
+                if state.is_game_over() {
+                    environments.game_over(data.world, OutcomeAffinity::Neutral);
+                }
+                // Be sure to return the environment when done.
+                data.world
+                    .write_resource::<Option<Environments>>()
+                    .replace(environments);
             }
         }
 
@@ -156,12 +162,15 @@ impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for Game {
         let game_logic = resources::GameLogic::default();
         data.world.insert(game_logic);
 
-        // TODO: Create an environment. Note! this has to occure after replacing the game resource.
-        self.dbg_env = Some(environments::DebugEnvironment::default());
-        self.dbg_env
-            .as_mut()
-            .unwrap()
-            .create(data.world, environments::EnvironmentOptions::default());
+        // Show the next environment. Note, this has to occur after replacing the game
+        // resource as this is used by the created environment.
+        let mut environments = { data.world.write_resource::<Option<Environments>>().take() };
+        if let Some(mut environments) = environments {
+            environments.show_random(data.world);
+            data.world
+                .write_resource::<Option<Environments>>()
+                .replace(environments);
+        }
 
         self.ui_root = Some(
             data.world

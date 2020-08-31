@@ -13,13 +13,59 @@ use super::environment::*;
 use amethyst::core::Transform;
 use amethyst::renderer::Camera;
 
+/// Holds options related to showing the debug environment.
+#[derive(Copy, Clone, Default, PartialEq, Debug)]
+pub struct DebugOptions {
+    /// Shows the grid's interior lines, e.g. the # shape.
+    show_grid: bool,
+    /// Shows the outer rectangle of the grid.
+    show_grid_bounds: bool,
+    /// Show the X and O marks.
+    show_marks: bool,
+    /// Show the line drawn through the the winning marks.
+    show_win_line: bool,
+
+    /// Highlight the square currently being hovered over by the mouse.
+    highlight_square_at_mouse: bool,
+}
+
+impl DebugOptions {
+    /// Enables all available debugging options.
+    pub fn enable_all() -> Self {
+        Self {
+            show_grid: true,
+            show_grid_bounds: true,
+            show_marks: true,
+            show_win_line: true,
+            highlight_square_at_mouse: true,
+        }
+    }
+
+    /// Disables all debugging options.
+    pub fn disable_all() -> Self {
+        Self::default()
+    }
+}
+
 #[derive(Default)]
 pub struct DebugEnvironment {
     entities: Vec<ecs::Entity>,
+
+    options: DebugOptions,
+}
+
+impl DebugEnvironment {
+    /// Creates a new Debug environment using the provided options.
+    pub fn new(options: DebugOptions) -> Self {
+        Self {
+            entities: Vec::new(),
+            options,
+        }
+    }
 }
 
 impl Environment for DebugEnvironment {
-    fn create(&mut self, world: &mut World, _options: EnvironmentOptions) {
+    fn create(&mut self, world: &mut World) {
         let (screen_w, screen_h) = {
             let screen_dimensions = world.read_resource::<ScreenDimensions>();
             (screen_dimensions.width(), screen_dimensions.height())
@@ -110,5 +156,9 @@ impl Environment for DebugEnvironment {
             let lines_entity = world.create_entity().with(debug_lines_component).build();
             self.entities.push(lines_entity);
         }
+    }
+
+    fn is_alive(&self) -> bool {
+        !self.entities.is_empty()
     }
 }
