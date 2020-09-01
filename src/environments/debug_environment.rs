@@ -14,19 +14,33 @@ use amethyst::core::Transform;
 use amethyst::renderer::Camera;
 
 /// Holds options related to showing the debug environment.
+///
+/// # Example
+/// You can use the structure update syntax to quickly set the options of interest.
+///
+/// ```
+/// let rest_disabled = DebugOptions::disable_all();
+/// let options = DebugOptions {
+///     show_grid: true,
+///     show_marks: true,
+///     show_win_line: true,
+///     .. rest_disabled,
+/// };
+/// ```
 #[derive(Copy, Clone, Default, PartialEq, Debug)]
 pub struct DebugOptions {
     /// Shows the grid's interior lines, e.g. the # shape.
-    show_grid: bool,
+    pub show_grid: bool,
     /// Shows the outer rectangle of the grid.
-    show_grid_bounds: bool,
+    pub show_grid_bounds: bool,
     /// Show the X and O marks.
-    show_marks: bool,
+    pub show_marks: bool,
     /// Show the line drawn through the the winning marks.
-    show_win_line: bool,
-
+    pub show_win_line: bool,
+    /// Shows the square center point positions.
+    pub show_center_points: bool,
     /// Highlight the square currently being hovered over by the mouse.
-    highlight_square_at_mouse: bool,
+    pub highlight_square_at_mouse: bool,
 }
 
 impl DebugOptions {
@@ -37,6 +51,7 @@ impl DebugOptions {
             show_grid_bounds: true,
             show_marks: true,
             show_win_line: true,
+            show_center_points: true,
             highlight_square_at_mouse: true,
         }
     }
