@@ -65,7 +65,7 @@ const TTT_BOARD_SIZE: i32 = 3;
 /// the different points in the grid.
 ///
 /// The grid assumes a square 3x3 game board.
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub struct Grid {
     // The bottom left point of the grid. It is easier to do calculations from
     // the point than the center point.

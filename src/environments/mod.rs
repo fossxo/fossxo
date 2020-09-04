@@ -6,11 +6,17 @@ mod environment;
 pub use self::debug_environment::DebugOptions;
 pub use self::environment::*;
 
-use amethyst::prelude::*;
+use amethyst::{
+    core::{math::*, Transform},
+    prelude::*,
+    renderer::Camera,
+    window::ScreenDimensions,
+};
 use rand::seq::SliceRandom;
 
 use self::debug_environment::DebugEnvironment;
 use crate::components;
+use crate::resources;
 
 /// Structure responsible for providing access and managing the all of the games environments.
 pub struct Environments {
@@ -40,9 +46,11 @@ impl Environments {
     }
 
     /// Loads assets required for all the environments.
-    pub fn load(&mut self, _world: &mut World) {
-        // TODO: currently there is nothing to load. This will change as
-        // environments become more interesting.
+    pub fn load(&mut self, world: &mut World) {
+        // Perform setup that is common to all environments.
+        self.global_environment_setup(world);
+
+        // TODO: perform environment specific setup.
     }
 
     /// Shows a random environment.
@@ -111,5 +119,28 @@ impl Environments {
             self.environments.shuffle(&mut rng);
             self.current_index = 0;
         }
+    }
+
+    // Performs global environment setup such as configuring the camera and the
+    // game's grid.
+    fn global_environment_setup(&mut self, world: &mut World) {
+        let (screen_w, screen_h) = {
+            let screen_dimensions = world.read_resource::<ScreenDimensions>();
+            (screen_dimensions.width(), screen_dimensions.height())
+        };
+
+        // Setup camera
+        let screen_center = Point3::new(screen_w / 2.0, screen_h / 2.0, 1.0);
+        let mut local_transform = Transform::default();
+        local_transform.set_translation_xyz(screen_center.x, screen_center.y, 10.0);
+        world
+            .create_entity()
+            .with(Camera::standard_2d(screen_w, screen_h))
+            .with(local_transform)
+            .build();
+
+        let grid_size = screen_h * 0.8;
+        let grid = resources::Grid::new(screen_center, grid_size);
+        world.insert(grid);
     }
 }

@@ -3,13 +3,9 @@ use contracts::*;
 use open_ttt_lib as ttt;
 
 use crate::components;
-// use crate::environments;
 use crate::environments::*;
 use crate::events;
 use crate::resources;
-use amethyst::core::ecs::LazyUpdate;
-use std::borrow::BorrowMut;
-use std::ops::DerefMut;
 
 // Number of players the game expects to work with.
 const NUM_PLAYERS: usize = 2;
@@ -118,7 +114,7 @@ impl<'a, 'b> Game {
         };
 
         if let Some((mark, state)) = mark_added {
-            let mut environments = { data.world.write_resource::<Option<Environments>>().take() };
+            let environments = { data.world.write_resource::<Option<Environments>>().take() };
 
             if let Some(mut environments) = environments {
                 environments.add_mark(data.world, &mark);

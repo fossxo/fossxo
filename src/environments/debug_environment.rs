@@ -1,8 +1,9 @@
-use amethyst::renderer::palette::Srgba;
 use amethyst::{
-    core::ecs, core::math::*, prelude::*, renderer::debug_drawing::DebugLinesComponent,
-    window::ScreenDimensions,
+    core::ecs,
+    prelude::*,
+    renderer::{debug_drawing::DebugLinesComponent, palette::Srgba},
 };
+use contracts::*;
 use open_ttt_lib as ttt;
 
 use crate::components;
@@ -10,35 +11,22 @@ use crate::math::*;
 use crate::resources;
 
 use super::environment::*;
-use amethyst::core::Transform;
-use amethyst::renderer::Camera;
 
 /// Holds options related to showing the debug environment.
 ///
-/// # Example
-/// You can use the structure update syntax to quickly set the options of interest.
-///
-/// ```
-/// let rest_disabled = DebugOptions::disable_all();
-/// let options = DebugOptions {
-///     show_grid: true,
-///     show_marks: true,
-///     show_win_line: true,
-///     .. rest_disabled,
-/// };
-/// ```
-#[derive(Copy, Clone, Default, PartialEq, Debug)]
+/// Note: You can use the structure update syntax to quickly set the options of interest.
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub struct DebugOptions {
-    /// Shows the grid's interior lines, e.g. the # shape.
-    pub show_grid: bool,
-    /// Shows the outer rectangle of the grid.
-    pub show_grid_bounds: bool,
+    /// Shows the interior lines that form the grid, e.g. the # shape.
+    pub grid: bool,
+    /// Shows the outer border of the grid.
+    pub border: bool,
     /// Show the X and O marks.
-    pub show_marks: bool,
+    pub marks: bool,
     /// Show the line drawn through the the winning marks.
-    pub show_win_line: bool,
+    pub win_line: bool,
     /// Shows the square center point positions.
-    pub show_center_points: bool,
+    pub center_points: bool,
     /// Highlight the square currently being hovered over by the mouse.
     pub highlight_square_at_mouse: bool,
 }
@@ -47,109 +35,195 @@ impl DebugOptions {
     /// Enables all available debugging options.
     pub fn enable_all() -> Self {
         Self {
-            show_grid: true,
-            show_grid_bounds: true,
-            show_marks: true,
-            show_win_line: true,
-            show_center_points: true,
+            grid: true,
+            border: true,
+            marks: true,
+            win_line: true,
+            center_points: true,
             highlight_square_at_mouse: true,
         }
     }
 
     /// Disables all debugging options.
     pub fn disable_all() -> Self {
-        Self::default()
+        Self {
+            grid: false,
+            border: false,
+            marks: false,
+            win_line: false,
+            center_points: false,
+            highlight_square_at_mouse: false,
+        }
     }
 }
 
+impl Default for DebugOptions {
+    fn default() -> Self {
+        Self {
+            grid: true,
+            border: false,
+            marks: true,
+            win_line: true,
+            center_points: false,
+            highlight_square_at_mouse: false,
+        }
+    }
+}
+
+// The size of the debug environment marks, relative to the square size.
+const MARK_SIZE_FACTOR: f32 = 0.8;
+// Size of the center point graphic,  relative to the square size.
+const CENTER_POINT_SIZE_FACTOR: f32 = 0.0625;
+
 #[derive(Default)]
 pub struct DebugEnvironment {
-    entities: Vec<ecs::Entity>,
-
+    // The options that control how how the environment is shown.
     options: DebugOptions,
+    // The main color to use when drawing the environment.
+    color: Srgba,
+    // All the entities owned by this environment.
+    entities: Vec<ecs::Entity>,
 }
 
 impl DebugEnvironment {
     /// Creates a new Debug environment using the provided options.
     pub fn new(options: DebugOptions) -> Self {
         Self {
-            entities: Vec::new(),
             options,
+            color: Srgba::new(0.3, 0.3, 0.3, 1.0),
+            entities: Vec::new(),
         }
+    }
+
+    // Adds the grid lines, e.g. the # shape.
+    fn add_grid(&self, debug_lines: &mut DebugLinesComponent, grid: &resources::Grid) {
+        for line in &grid.lines() {
+            debug_lines.add_line(line.start(), line.end(), self.color);
+        }
+    }
+
+    // Adds a border around the grid.
+    fn add_border(&self, debug_lines: &mut DebugLinesComponent, grid: &resources::Grid) {
+        let grid_border = Square::new(grid.center_point(), grid.size());
+        debug_lines.add_rectangle_2d(
+            grid_border.bottom_left().xy(),
+            grid_border.top_right().xy(),
+            grid.center_point().z,
+            self.color,
+        );
+    }
+
+    // Shows the square center point positions.
+    fn add_center_points(&self, debug_lines: &mut DebugLinesComponent, grid: &resources::Grid) {
+        for square in grid.squares() {
+            let length = square.size() * CENTER_POINT_SIZE_FACTOR;
+            let center_point_square = Square::new(square.center_point(), length);
+            debug_lines.add_line(
+                center_point_square.bottom(),
+                center_point_square.top(),
+                self.color,
+            );
+            debug_lines.add_line(
+                center_point_square.left(),
+                center_point_square.right(),
+                self.color,
+            );
+        }
+    }
+
+    // Add an X mark to the debug lines component in the indicated square.
+    fn add_x_mark(&self, debug_lines: &mut DebugLinesComponent, square: &Square) {
+        let x_mark_square = Square::new(square.center_point(), square.size() * MARK_SIZE_FACTOR);
+        debug_lines.add_line(
+            x_mark_square.top_left(),
+            x_mark_square.bottom_right(),
+            self.color,
+        );
+        debug_lines.add_line(
+            x_mark_square.bottom_left(),
+            x_mark_square.top_right(),
+            self.color,
+        );
+    }
+
+    // Add an O mark to the debug lines component in the indicated square.
+    fn add_o_mark(&self, debug_lines: &mut DebugLinesComponent, square: &Square) {
+        let radius = square.size() * MARK_SIZE_FACTOR / 2.0;
+        let points = 32;
+        debug_lines.add_circle_2d(square.center_point(), radius, points, self.color);
     }
 }
 
 impl Environment for DebugEnvironment {
     fn create(&mut self, world: &mut World) {
-        let (screen_w, screen_h) = {
-            let screen_dimensions = world.read_resource::<ScreenDimensions>();
-            (screen_dimensions.width(), screen_dimensions.height())
+        // Get a copy of the grid resource so we know where to place the various lines.
+        let grid = {
+            let grid_resource = world.read_resource::<resources::Grid>();
+            *grid_resource
         };
 
-        // Setup camera
-        let screen_center = Point3::new(screen_w / 2.0, screen_h / 2.0, 1.0);
-        let mut local_transform = Transform::default();
-        local_transform.set_translation_xyz(screen_center.x, screen_center.y, 10.0);
-        world
-            .create_entity()
-            .with(Camera::standard_2d(screen_w, screen_h))
-            .with(local_transform)
-            .build();
-
-        let grid_size = screen_h * 0.8;
-        let grid = resources::Grid::new(screen_center, grid_size);
-
-        // Setup debug lines as a component and add lines to render axis&grid
+        // Create the lines for the grid, border, and center points.
         let mut debug_lines_component = DebugLinesComponent::new();
-        for line in &grid.lines() {
-            let color = Srgba::new(0.3, 0.3, 0.3, 1.0);
-            debug_lines_component.add_line(line.start(), line.end(), color);
+        if self.options.grid {
+            self.add_grid(&mut debug_lines_component, &grid);
         }
-        let lines_entity = world.create_entity().with(debug_lines_component).build();
-        self.entities.push(lines_entity);
-        world.insert(grid);
+
+        if self.options.border {
+            self.add_border(&mut debug_lines_component, &grid);
+        }
+
+        if self.options.center_points {
+            self.add_center_points(&mut debug_lines_component, &grid);
+        }
+        self.entities
+            .push(world.create_entity().with(debug_lines_component).build());
+
+        // TODO: Add any existing marks
+        // TODO: Add any existing win lines
+
+        if self.options.highlight_square_at_mouse {
+            // TODO: Add highlight support
+        }
     }
 
+    #[post(self.entities.len() == 0)]
     fn delete(&mut self, world: &mut World) {
         // Delete all entities.
-        let _result = world.delete_entities(self.entities.as_slice());
+        let result = world.delete_entities(self.entities.as_slice());
+        if let Err(e) = result {
+            log::error!("Unable to delete entities from environment. Details: {}", e);
+        }
+        self.entities.clear();
     }
 
     fn add_mark(&mut self, world: &mut World, mark: &components::Mark) {
-        let square = {
+        if !self.options.marks {
+            return;
+        }
+
+        // Determine where to place the mark.
+        let square_for_mark = {
             let grid = world.read_resource::<resources::Grid>();
             grid.position_to_square(mark.position)
         };
 
-        let color = Srgba::new(0.3, 0.3, 0.3, 1.0);
+        // Add the corresponding mark.
         let mut debug_lines_component = DebugLinesComponent::new();
         match mark.owner {
-            components::Player::X => {
-                let x_mark_square = Square::new(square.center_point(), square.size() * 0.8);
-                debug_lines_component.add_line(
-                    x_mark_square.top_left(),
-                    x_mark_square.bottom_right(),
-                    color,
-                );
-                debug_lines_component.add_line(
-                    x_mark_square.bottom_left(),
-                    x_mark_square.top_right(),
-                    color,
-                );
-            }
-            components::Player::O => debug_lines_component.add_circle_2d(
-                square.center_point(),
-                square.size() * 0.4,
-                32,
-                color,
-            ),
+            components::Player::X => self.add_x_mark(&mut debug_lines_component, &square_for_mark),
+            components::Player::O => self.add_o_mark(&mut debug_lines_component, &square_for_mark),
         }
 
-        let lines_entity = world.create_entity().with(debug_lines_component).build();
-        self.entities.push(lines_entity);
+        self.entities
+            .push(world.create_entity().with(debug_lines_component).build());
     }
 
     fn game_over(&mut self, world: &mut World, _outcome: OutcomeAffinity) {
+        if !self.options.win_line {
+            return;
+        }
+
+        // Get the line that goes through the winning marks.
         let winning_line = {
             let game_logic = world.read_resource::<resources::GameLogic>();
             let grid = world.read_resource::<resources::Grid>();
@@ -164,12 +238,12 @@ impl Environment for DebugEnvironment {
             }
         };
 
+        // Add the line, if one was found, through the marks.
         if let Some(line) = winning_line {
-            let color = Srgba::new(0.8, 0.3, 0.3, 1.0);
             let mut debug_lines_component = DebugLinesComponent::new();
-            debug_lines_component.add_line(line.start(), line.end(), color);
-            let lines_entity = world.create_entity().with(debug_lines_component).build();
-            self.entities.push(lines_entity);
+            debug_lines_component.add_line(line.start(), line.end(), self.color);
+            self.entities
+                .push(world.create_entity().with(debug_lines_component).build());
         }
     }
 
