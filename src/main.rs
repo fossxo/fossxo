@@ -67,7 +67,7 @@ fn display_configuration() -> window::DisplayConfig {
     let mut config = window::DisplayConfig::default();
     config.title = "FossXO".to_string();
     config.dimensions = Some((800, 600));
-
+    config.min_dimensions = Some((800, 600));
     config
 }
 

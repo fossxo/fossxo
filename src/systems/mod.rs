@@ -3,7 +3,7 @@
 //! Systems contain small pieces of the game’s logic that is applied to
 //! collections of components or resources.
 
-use amethyst::{core::bundle::SystemBundle, ecs};
+use amethyst::{core::bundle::SystemBundle, ecs, utils::ortho_camera::CameraOrthoSystem};
 
 mod ai_player;
 mod local_player;
@@ -59,6 +59,7 @@ impl<'a, 'b> SystemBundle<'a, 'b> for EnvironmentsBundle {
             "mouse_hover_debug_box_system",
             &["mouse_raycast_system"],
         );
+        builder.add(CameraOrthoSystem, "camera_ortho_system", &[]);
         Ok(())
     }
 }

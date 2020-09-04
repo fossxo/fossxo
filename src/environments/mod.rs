@@ -10,6 +10,7 @@ use amethyst::{
     core::{math::*, Transform},
     prelude::*,
     renderer::Camera,
+    utils::ortho_camera::{CameraNormalizeMode, CameraOrtho},
     window::ScreenDimensions,
 };
 use rand::seq::SliceRandom;
@@ -129,18 +130,23 @@ impl Environments {
             (screen_dimensions.width(), screen_dimensions.height())
         };
 
-        // Setup camera
-        let screen_center = Point3::new(screen_w / 2.0, screen_h / 2.0, 1.0);
+        // Setup the camera. The camera defines the world coordinates ranges.
+        // We configure the camera so the center of the screen, and thus the grid,
+        // is at (0,0,0). The camera is also configured to adjust as needed if the
+        // window is resized so the grid is always visible.
         let mut local_transform = Transform::default();
-        local_transform.set_translation_xyz(screen_center.x, screen_center.y, 10.0);
+        local_transform.set_translation_xyz(-0.5, 0.5, 1.0);
         world
             .create_entity()
-            .with(Camera::standard_2d(screen_w, screen_h))
             .with(local_transform)
+            .with(Camera::standard_2d(screen_w, screen_h))
+            .with(CameraOrtho::normalized(CameraNormalizeMode::Contain))
             .build();
 
-        let grid_size = screen_h * 0.8;
-        let grid = resources::Grid::new(screen_center, grid_size);
+        // Create the grid in the center of the screen.
+        let grid_center_point = Point3::new(0.0, 0.0, 0.0);
+        let grid_size = 0.8;
+        let grid = resources::Grid::new(grid_center_point, grid_size);
         world.insert(grid);
     }
 
