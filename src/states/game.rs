@@ -1,4 +1,4 @@
-use amethyst::{core::ecs, core::timing::Time, prelude::*, ui::UiCreator};
+use amethyst::{core::ecs, core::timing::Time, input, prelude::*, ui::UiCreator};
 use contracts::*;
 use open_ttt_lib as ttt;
 
@@ -6,6 +6,8 @@ use crate::components;
 use crate::environments::*;
 use crate::events;
 use crate::resources;
+
+use super::MainMenu;
 
 // Number of players the game expects to work with.
 const NUM_PLAYERS: usize = 2;
@@ -72,10 +74,10 @@ impl<'a, 'b> Game {
 
     // Deletes all players from the game.
     fn delete_payers(&mut self, world: &mut World) {
-        let result = world.delete_entities(self.players.as_slice());
-        if let Err(e) = result {
-            log::error!("Unable to delete player entities from game. Details: {}", e);
-        }
+        world
+            .delete_entities(self.players.as_slice())
+            .expect("Unable to delete player entities from game.");
+
         self.players.clear();
     }
 
@@ -83,10 +85,10 @@ impl<'a, 'b> Game {
     fn handle_player_event(
         &mut self,
         data: StateData<'_, GameData<'a, 'b>>,
-        player_event: events::PlayerEvent,
+        player_event: &events::PlayerEvent,
     ) -> Trans<GameData<'a, 'b>, events::StateEvent> {
         let mark_added = {
-            let events::PlayerEvent::RequestMark(player, position) = player_event;
+            let events::PlayerEvent::RequestMark(player, position) = *player_event;
             let mut game_logic = data.world.fetch_mut::<resources::GameLogic>();
 
             // Before doing the move, ensure it is the player's turn and the position selected is valid.
@@ -130,6 +132,21 @@ impl<'a, 'b> Game {
 
         Trans::None
     }
+
+    // Handles window related events.
+    fn handle_window_event(
+        &mut self,
+        _data: StateData<'_, GameData<'a, 'b>>,
+        window_event: &events::WindowEvent,
+    ) -> Trans<GameData<'a, 'b>, events::StateEvent> {
+        if input::is_close_requested(window_event) {
+            Trans::Quit
+        } else if input::is_key_down(window_event, input::VirtualKeyCode::Escape) {
+            Trans::Switch(Box::new(MainMenu::new()))
+        } else {
+            Trans::None
+        }
+    }
 }
 
 impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for Game {
@@ -168,16 +185,24 @@ impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for Game {
                 .replace(environments);
         }
 
-        self.ui_root = Some(
-            data.world
-                .exec(|mut creator: UiCreator<'_>| creator.create("ui/menu.ron", ())),
-        );
+        // self.ui_root = Some(
+        //     data.world
+        //         .exec(|mut creator: UiCreator<'_>| creator.create("ui/main_menu.ron", ())),
+        // );
     }
 
     #[post(self.players.is_empty())]
     fn on_stop(&mut self, data: StateData<'_, GameData<'a, 'b>>) {
         // Remove entities we created from the world.
         self.delete_payers(data.world);
+
+        let mut environments = { data.world.write_resource::<Option<Environments>>().take() };
+        if let Some(mut environments) = environments {
+            environments.delete_current(data.world);
+            data.world
+                .write_resource::<Option<Environments>>()
+                .replace(environments);
+        }
 
         // Make a log entry of the game stopping.
         match self.options {
@@ -202,7 +227,10 @@ impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for Game {
         // Determine which sub-event handler needs to be called.
         match event {
             events::StateEvent::Player(player_event) => {
-                self.handle_player_event(data, player_event)
+                self.handle_player_event(data, &player_event)
+            }
+            events::StateEvent::Window(window_event) => {
+                self.handle_window_event(data, &window_event)
             }
             _ => Trans::None,
         }

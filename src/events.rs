@@ -2,6 +2,8 @@
 //!
 //! This includes input events, window events, and game specific events.
 
+pub use amethyst::{input::InputEvent, ui::UiEvent, winit::Event as WindowEvent};
+
 use std::fmt;
 
 use amethyst::{
@@ -11,10 +13,8 @@ use amethyst::{
     },
     derive::EventReader,
     ecs::{Read, SystemData},
-    input::{BindingTypes, InputEvent},
+    input::BindingTypes,
     prelude::*,
-    ui::UiEvent,
-    winit::Event as WindowEvent,
 };
 use open_ttt_lib as ttt;
 use serde::{Deserialize, Serialize};

@@ -152,12 +152,20 @@ impl Environments {
 
     // Creates all the available environments.
     fn create_environments() -> Vec<Box<dyn Environment + Send + Sync>> {
-        vec![Box::new(DebugEnvironment::new(DebugOptions {
-            marks: true,
-            center_points: true,
-            win_line: true,
-            mouse_hover: components::MouseHoverVisibility::FreePositions,
-            ..DebugOptions::disable_all()
-        }))]
+        vec![
+            Box::new(DebugEnvironment::new(DebugOptions {
+                marks: true,
+                center_points: true,
+                win_line: true,
+                mouse_hover: components::MouseHoverVisibility::FreePositions,
+                ..DebugOptions::disable_all()
+            })),
+            Box::new(DebugEnvironment::new(DebugOptions {
+                marks: true,
+                grid: true,
+                win_line: true,
+                ..DebugOptions::disable_all()
+            })),
+        ]
     }
 }
