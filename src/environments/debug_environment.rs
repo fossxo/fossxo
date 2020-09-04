@@ -27,8 +27,8 @@ pub struct DebugOptions {
     pub win_line: bool,
     /// Shows the square center point positions.
     pub center_points: bool,
-    /// Highlight the square currently being hovered over by the mouse.
-    pub highlight_square_at_mouse: bool,
+    /// How to highlight the square currently being hovered over by the mouse.
+    pub mouse_hover: components::MouseHoverVisibility,
 }
 
 impl DebugOptions {
@@ -40,7 +40,7 @@ impl DebugOptions {
             marks: true,
             win_line: true,
             center_points: true,
-            highlight_square_at_mouse: true,
+            mouse_hover: components::MouseHoverVisibility::AllPositions,
         }
     }
 
@@ -52,7 +52,7 @@ impl DebugOptions {
             marks: false,
             win_line: false,
             center_points: false,
-            highlight_square_at_mouse: false,
+            mouse_hover: components::MouseHoverVisibility::Hidden,
         }
     }
 }
@@ -65,7 +65,7 @@ impl Default for DebugOptions {
             marks: true,
             win_line: true,
             center_points: false,
-            highlight_square_at_mouse: false,
+            mouse_hover: components::MouseHoverVisibility::FreePositions,
         }
     }
 }
@@ -181,8 +181,14 @@ impl Environment for DebugEnvironment {
         // TODO: Add any existing marks
         // TODO: Add any existing win lines
 
-        if self.options.highlight_square_at_mouse {
-            // TODO: Add highlight support
+        // Create the mouse hover box.
+        if self.options.mouse_hover != components::MouseHoverVisibility::Hidden {
+            let mouse_hover_debug_box = components::MouseHoverDebugBox {
+                color: self.color,
+                visibility: self.options.mouse_hover,
+            };
+            self.entities
+                .push(world.create_entity().with(mouse_hover_debug_box).build());
         }
     }
 

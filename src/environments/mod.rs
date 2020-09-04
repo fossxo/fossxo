@@ -39,7 +39,7 @@ impl Environments {
         // let environments :  = vec![Box::new(DebugEnvironment::new(DebugOptions::enable_all()))];
 
         Self {
-            environments: vec![Box::new(DebugEnvironment::new(DebugOptions::enable_all()))],
+            environments: Self::create_environments(),
             current_index: 0,
             debug_environment: DebugEnvironment::new(DebugOptions::disable_all()),
         }
@@ -142,5 +142,16 @@ impl Environments {
         let grid_size = screen_h * 0.8;
         let grid = resources::Grid::new(screen_center, grid_size);
         world.insert(grid);
+    }
+
+    // Creates all the available environments.
+    fn create_environments() -> Vec<Box<dyn Environment + Send + Sync>> {
+        vec![Box::new(DebugEnvironment::new(DebugOptions {
+            marks: true,
+            center_points: true,
+            win_line: true,
+            mouse_hover: components::MouseHoverVisibility::FreePositions,
+            ..DebugOptions::disable_all()
+        }))]
     }
 }

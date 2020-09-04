@@ -7,10 +7,12 @@ use amethyst::{core::bundle::SystemBundle, ecs};
 
 mod ai_player;
 mod local_player;
+mod mouse_hover_debug_box;
 mod mouse_raycast;
 
 use self::ai_player::*;
 use self::local_player::*;
+use self::mouse_hover_debug_box::*;
 use self::mouse_raycast::*;
 
 /// Bundle containing the game's main systems.
@@ -50,8 +52,13 @@ impl<'a, 'b> SystemBundle<'a, 'b> for EnvironmentsBundle {
     fn build(
         self,
         _world: &mut ecs::World,
-        _builder: &mut ecs::DispatcherBuilder<'a, 'b>,
+        builder: &mut ecs::DispatcherBuilder<'a, 'b>,
     ) -> Result<(), amethyst::Error> {
+        builder.add(
+            MouseHoverDebugBoxSystem,
+            "mouse_hover_debug_box_system",
+            &["mouse_raycast_system"],
+        );
         Ok(())
     }
 }
