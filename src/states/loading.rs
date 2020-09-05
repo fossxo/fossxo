@@ -1,4 +1,4 @@
-use amethyst::prelude::*;
+use amethyst::{prelude::*, ui};
 
 use crate::environments::Environments;
 use crate::events;
@@ -12,6 +12,10 @@ pub struct Loading;
 impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for Loading {
     fn on_start(&mut self, data: StateData<'_, GameData<'a, 'b>>) {
         log::info!("Started loading.");
+
+        // Create necessary resources that for some reason the UI system does not make.
+        data.world
+            .insert(ui::Widgets::<ui::UiLabel, u32>::default());
 
         // Create the environments resource and tell it to start loading its
         // required assets.

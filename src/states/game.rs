@@ -1,6 +1,7 @@
-use amethyst::{core::ecs, core::timing::Time, input, prelude::*, ui::UiCreator};
+use amethyst::{core::ecs, core::timing::Time, input, prelude::*, ui};
 use contracts::*;
 use open_ttt_lib as ttt;
+use std::time::Duration;
 
 use crate::components;
 use crate::environments::*;
@@ -8,9 +9,6 @@ use crate::events;
 use crate::resources;
 
 use super::MainMenu;
-
-// Number of players the game expects to work with.
-const NUM_PLAYERS: usize = 2;
 
 /// Holds the options for the game state.
 pub enum GameStateOptions {
@@ -30,9 +28,11 @@ impl Default for GameStateOptions {
 /// Responsible for managing single-player and multiplayer games.
 pub struct Game {
     options: GameStateOptions,
-    players: Vec<ecs::Entity>,
+    // Entities the game state owns that need deleted when the state exits.
+    owned_entities: Vec<ecs::Entity>,
     // The UI root entity.
-    ui_root: Option<ecs::Entity>,
+    // status_text: Option<ui::UiLabel>,
+    menu_button: Option<ecs::Entity>,
 }
 
 impl<'a, 'b> Game {
@@ -40,8 +40,9 @@ impl<'a, 'b> Game {
     pub fn new(options: GameStateOptions) -> Self {
         Self {
             options,
-            players: Vec::new(),
-            ui_root: None,
+            owned_entities: Vec::new(),
+            // status_text: None,
+            menu_button: None,
         }
     }
 
@@ -53,7 +54,7 @@ impl<'a, 'b> Game {
             .with(components::LocalPlayer)
             .build();
 
-        self.players.push(player_entity);
+        self.owned_entities.push(player_entity);
     }
 
     // Adds an AI player to the world.
@@ -63,22 +64,83 @@ impl<'a, 'b> Game {
         player: components::Player,
         difficulty: ttt::ai::Difficulty,
     ) {
+        let mut ai_player_component = components::AiPlayer::new(difficulty);
+        // A little bit of delay is added to the AI player to give the impression thinking
+        // about the next move.
+        ai_player_component.move_delay = Duration::from_secs_f32(0.4);
         let ai_player_entity = world
             .create_entity()
             .with(player)
-            .with(components::AiPlayer::new(difficulty))
+            .with(ai_player_component)
             .build();
 
-        self.players.push(ai_player_entity);
+        self.owned_entities.push(ai_player_entity);
     }
 
-    // Deletes all players from the game.
-    fn delete_payers(&mut self, world: &mut World) {
-        world
-            .delete_entities(self.players.as_slice())
-            .expect("Unable to delete player entities from game.");
+    fn create_status_text(&mut self, world: &mut World) {
+        let (_id, label) = ui::UiLabelBuilder::<u32>::new("")
+            .with_anchor(ui::Anchor::TopLeft)
+            .with_align(ui::Anchor::MiddleLeft)
+            .with_size(600.0, 84.0)
+            // The position is slightly past the 1/2 way part so the text is not
+            // right at the edge of the screen.
+            .with_position(310.0, -20.0)
+            .with_font_size(20.0)
+            .with_text_color([1.0, 1.0, 1.0, 1.0])
+            .build_from_world(world);
+        self.owned_entities.push(label.text_entity);
 
-        self.players.clear();
+        // Create the game state entity that gets updated to reflect the state of the game.
+        let extra_information = self.game_state_extra_information();
+        self.owned_entities.push(
+            world
+                .create_entity()
+                .with(components::GameStateText {
+                    ui_text: label.text_entity,
+                    extra_information,
+                })
+                .build(),
+        );
+    }
+
+    fn game_state_extra_information(&mut self) -> Vec<String> {
+        match self.options {
+            GameStateOptions::Multiplayer => vec![String::from("Multiplayer")],
+            GameStateOptions::SinglePlayer(difficulty, _) => {
+                let mut single_player_info = vec!["Single-player".to_string()];
+                match difficulty {
+                    ttt::ai::Difficulty::Easy => single_player_info.push("Easy".to_string()),
+                    ttt::ai::Difficulty::Medium => single_player_info.push("Medium".to_string()),
+                    ttt::ai::Difficulty::Hard => single_player_info.push("Hard".to_string()),
+                    _ => (),
+                };
+                single_player_info
+            }
+        }
+    }
+
+    fn create_menu_button(&mut self, world: &mut World) {
+        // TODO: load a hamburger menu icon here instead of text.
+        let size = 48.0;
+        let (_button_id, button) = ui::UiButtonBuilder::<(), u32>::new("")
+            .with_anchor(ui::Anchor::TopRight)
+            .with_position(-size / 2.0, -size / 2.0)
+            .with_size(size, size)
+            .with_image(ui::UiImage::SolidColor([0.5, 0.5, 0.5, 1.0]))
+            .with_hover_image(ui::UiImage::SolidColor([0.8, 0.8, 0.8, 1.0]))
+            .build_from_world(&world);
+        self.owned_entities.push(button.text_entity);
+        self.owned_entities.push(button.image_entity);
+        self.menu_button = Some(button.image_entity);
+    }
+
+    // Deletes all owned entities from the world.
+    fn delete_owned_entities(&mut self, world: &mut World) {
+        world
+            .delete_entities(self.owned_entities.as_slice())
+            .expect("Unable to game state entities.");
+
+        self.owned_entities.clear();
     }
 
     // Updates the game based on the player event.
@@ -147,10 +209,30 @@ impl<'a, 'b> Game {
             Trans::None
         }
     }
+
+    // Handles UI related events.
+    fn handle_ui_event(
+        &mut self,
+        _data: StateData<'_, GameData<'a, 'b>>,
+        ui_event: &events::UiEvent,
+    ) -> Trans<GameData<'a, 'b>, events::StateEvent> {
+        if ui_event.event_type == ui::UiEventType::Click {
+            // Determine which handler to call by comparing the target entity with
+            // the those corresponding to our buttons.
+            if Some(ui_event.target) == self.menu_button {
+                return self.on_menu_button_click();
+            }
+        }
+
+        Trans::None
+    }
+
+    fn on_menu_button_click(&mut self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
+        Trans::Switch(Box::new(MainMenu::new()))
+    }
 }
 
 impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for Game {
-    #[post(self.players.len() == NUM_PLAYERS)]
     fn on_start(&mut self, data: StateData<'_, GameData<'a, 'b>>) {
         // Create the game's players based on the given options.
         match self.options {
@@ -177,7 +259,7 @@ impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for Game {
 
         // Show the next environment. Note, this has to occur after replacing the game
         // resource as this is used by the created environment.
-        let mut environments = { data.world.write_resource::<Option<Environments>>().take() };
+        let environments = { data.world.write_resource::<Option<Environments>>().take() };
         if let Some(mut environments) = environments {
             environments.show_random(data.world);
             data.world
@@ -185,16 +267,15 @@ impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for Game {
                 .replace(environments);
         }
 
-        // self.ui_root = Some(
-        //     data.world
-        //         .exec(|mut creator: UiCreator<'_>| creator.create("ui/main_menu.ron", ())),
-        // );
+        // Create the UI elements.
+        self.create_status_text(data.world);
+        self.create_menu_button(data.world);
     }
 
-    #[post(self.players.is_empty())]
+    #[post(self.owned_entities.is_empty())]
     fn on_stop(&mut self, data: StateData<'_, GameData<'a, 'b>>) {
         // Remove entities we created from the world.
-        self.delete_payers(data.world);
+        self.delete_owned_entities(data.world);
 
         let mut environments = { data.world.write_resource::<Option<Environments>>().take() };
         if let Some(mut environments) = environments {
@@ -232,6 +313,7 @@ impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for Game {
             events::StateEvent::Window(window_event) => {
                 self.handle_window_event(data, &window_event)
             }
+            events::StateEvent::Ui(ui_event) => self.handle_ui_event(data, &ui_event),
             _ => Trans::None,
         }
     }

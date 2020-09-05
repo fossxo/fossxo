@@ -85,7 +85,7 @@ pub struct MouseHoverDebugBox {
     /// When to show the debug box.
     pub visibility: MouseHoverVisibility,
 }
-// mouse hover debug box
+
 impl ecs::Component for MouseHoverDebugBox {
     type Storage = ecs::DenseVecStorage<Self>;
 }
@@ -99,6 +99,22 @@ pub enum MouseHoverVisibility {
     FreePositions,
     /// Show the mouse hover for all valid positions.
     AllPositions,
+}
+
+/// Uses the provided UI text entity to display the game's state.
+///
+/// The game state includes the current player's turn and the outcome of the game.
+#[derive(Clone, Debug, PartialEq)]
+pub struct GameStateText {
+    /// UI Text entity to use to display the game state.
+    pub ui_text: ecs::Entity,
+
+    /// Optional extra information to include when displaying the game's status.
+    pub extra_information: Vec<String>,
+}
+
+impl ecs::Component for GameStateText {
+    type Storage = ecs::DenseVecStorage<Self>;
 }
 
 #[cfg(test)]

@@ -6,11 +6,13 @@
 use amethyst::{core::bundle::SystemBundle, ecs, utils::ortho_camera::CameraOrthoSystem};
 
 mod ai_player;
+mod game_state_display;
 mod local_player;
 mod mouse_hover_debug_box;
 mod mouse_raycast;
 
 use self::ai_player::*;
+use self::game_state_display::*;
 use self::local_player::*;
 use self::mouse_hover_debug_box::*;
 use self::mouse_raycast::*;
@@ -38,6 +40,7 @@ impl<'a, 'b> SystemBundle<'a, 'b> for GameBundle {
             "local_player_system",
             &["input_system", "mouse_raycast_system"],
         );
+        builder.add(GameStateDisplaySystem, "game_state_display_system", &[]);
         Ok(())
     }
 }
