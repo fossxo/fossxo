@@ -2,6 +2,7 @@ use amethyst::{core::ecs, input, prelude::*, ui};
 use contracts::*;
 
 use crate::events;
+use crate::file_io;
 
 use super::{Game, GameStateOptions};
 
@@ -81,7 +82,11 @@ impl<'a, 'b> MainMenu {
     }
 
     fn on_help_button_click(&mut self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
-        // TODO: Show the player manual using the system's default browser.
+        match file_io::open_player_manual() {
+            Ok(()) => log::info!("Opened player manual in the default browser."),
+            Err(e) => log::error!("Unable to open the player manual. Error details: {}", e),
+        }
+
         Trans::None
     }
 

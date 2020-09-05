@@ -25,6 +25,7 @@ open_ttt_lib = "0.2"
 serde = { version = "1", features = ["derive"] }
 os_info = { version = "2.0", default-features = false }
 rand = "0.7"
+webbrowser = "0.5"
 
 [dependencies.amethyst]
 version = "0.15"

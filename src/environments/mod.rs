@@ -112,6 +112,10 @@ impl Environments {
     // Advances the `current_index` to the next environment, shuffling the
     // environments vector if necessary.
     fn select_next_environment(&mut self) {
+        // TODO: Perform a check to ensure the next environment is not the same
+        // as the last one. That would look weird. The trick is figuring out
+        // how to do the comparison (e.g. in a different language we would just
+        // compare the pointer value).
         self.current_index += 1;
         // If the end of the environments have been reached, shuffle the
         // environments and start gain at the beginning of the collection.

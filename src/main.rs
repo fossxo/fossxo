@@ -8,14 +8,14 @@ mod components;
 mod constants;
 mod environments;
 mod events;
+mod file_io;
 mod math;
 mod resources;
 mod states;
 mod systems;
 
 use amethyst::{
-    core::frame_limiter, core::transform::TransformBundle, input, prelude::*, renderer, ui,
-    utils::application_root_dir, window,
+    core::frame_limiter, core::transform::TransformBundle, input, prelude::*, renderer, ui, window,
 };
 
 use structopt::StructOpt;
@@ -26,15 +26,11 @@ fn main() -> amethyst::Result<()> {
     log::info!("Started FossXO v{}.", constants::FOSSXO_VERSION);
     log::info!("Operating system: {}", os_info::get());
 
-    let app_root = application_root_dir()?;
-    let assets_dir = app_root.join("assets");
-    let config_dir = app_root.join("config");
-
     let game_data = GameDataBuilder::default()
         .with_bundle(TransformBundle::new())?
         .with_bundle(
             input::InputBundle::<events::InputBindingTypes>::new()
-                .with_bindings_from_file(config_dir.join("input.ron"))?,
+                .with_bindings_from_file(file_io::input_bindings_file()?)?,
         )?
         .with_bundle(ui::UiBundle::<events::InputBindingTypes>::new())?
         .with_bundle(systems::GameBundle)?
@@ -51,7 +47,7 @@ fn main() -> amethyst::Result<()> {
         )?;
 
     let mut game = CoreApplication::<_, events::StateEvent, events::StateEventReader>::build(
-        assets_dir,
+        file_io::assets_dir()?,
         states::Loading,
     )?
     .with_frame_limit(frame_limiter::FrameRateLimitStrategy::Sleep, 60)
