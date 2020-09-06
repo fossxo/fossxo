@@ -4,7 +4,7 @@ use contracts::*;
 use crate::events;
 use crate::file_io;
 
-use super::{Game, GameStateOptions, SinglePlayerMenu};
+use super::*;
 
 const SINGLE_PLAYER_BUTTON_ID: &str = "single_player_button";
 const MULTIPLAYER_BUTTON_ID: &str = "multiplayer_button";
@@ -77,8 +77,7 @@ impl<'a, 'b> MainMenu {
     }
 
     fn on_credits_button_click(&mut self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
-        // TODO: Switch to the credits state.
-        Trans::None
+        Trans::Switch(Box::new(CreditsMenu::new()))
     }
 
     fn on_help_button_click(&mut self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
