@@ -4,7 +4,7 @@ use contracts::*;
 use crate::events;
 use crate::file_io;
 
-use super::{Game, GameStateOptions};
+use super::{Game, GameStateOptions, SinglePlayerMenu};
 
 const SINGLE_PLAYER_BUTTON_ID: &str = "single_player_button";
 const MULTIPLAYER_BUTTON_ID: &str = "multiplayer_button";
@@ -66,9 +66,9 @@ impl<'a, 'b> MainMenu {
     }
 
     fn on_single_player_button_click(&mut self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
-        // TODO: Switch to the single player menus state so the user can configure
+        // Switch to the single player menus state so the user can configure
         // the single player options.
-        Trans::None
+        Trans::Switch(Box::new(SinglePlayerMenu::new()))
     }
 
     fn on_multiplayer_button_click(&mut self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
