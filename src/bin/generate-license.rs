@@ -5,11 +5,11 @@ use std::path::Path;
 use std::process::Command;
 use structopt::StructOpt;
 
-/// Helper application for generating the user manual license files.
+/// Helper application for generating the player manual license files.
 #[derive(StructOpt, Debug)]
 struct CliArgs {}
 
-const USER_MANUAL_DIR: &str = "user-manual";
+const PLAYER_MANUAL_DIR: &str = "player-manual";
 
 fn main() -> Result<(), Box<dyn Error>> {
     let _args = CliArgs::from_args();
@@ -29,7 +29,7 @@ fn run_cargo_about(template_file: &str) -> Result<(), Box<dyn Error>> {
         Ok(crate_root_dir) => Path::new(crate_root_dir.as_str()).to_path_buf(),
         Err(_) => std::env::current_dir()?,
     };
-    let template_dir = current_dir.join(USER_MANUAL_DIR).join("template");
+    let template_dir = current_dir.join(PLAYER_MANUAL_DIR).join("template");
     let template_name = template_dir.join(template_file);
     let cargo_toml = current_dir.join("Cargo.toml");
 
@@ -45,7 +45,7 @@ fn run_cargo_about(template_file: &str) -> Result<(), Box<dyn Error>> {
 
     if output.stderr.is_empty() {
         // Write the generated file if there were no errors.
-        let src_dir = Path::new(USER_MANUAL_DIR).join("src");
+        let src_dir = Path::new(PLAYER_MANUAL_DIR).join("src");
         let out_file = Path::new(template_file).file_stem().unwrap();
         let out_file_path = src_dir.join(out_file);
         let mut f = File::create(out_file_path)?;

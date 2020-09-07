@@ -3,14 +3,14 @@ authors = ["James Richey"]
 language = "en"
 multilingual = false
 src = "src"
-title = "FossXO User Manual"
+title = "FossXO Manual"
 
 [build]
-build-dir = "../target/user-manual"
+build-dir = "../target/player-manual"
 create-missing = false
 
 [output.html]
 default-theme = "light"
 preferred-dark-theme = "navy"
 mathjax-support = false
-additional-css = ["user-manual.css"]
+additional-css = ["player-manual.css"]

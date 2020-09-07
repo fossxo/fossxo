@@ -12,7 +12,7 @@ so you do not have to worry if a step is accidentally skipped.
 Below are some common commands used while developing ths game.
 
 ```bash
-# Build the game, user manual, and run the quick tests.
+# Build the game, player manual, and run the quick tests.
 cargo make dev
 
 # Run the complete test suite.
@@ -79,7 +79,7 @@ cargo install cargo-make
 ### 4. Build the Game
 Finally, you can build the game:
 ```
-# Build the game, user manual, and run the quick tests.
+# Build the game, player manual, and run the quick tests.
 cargo make dev
 ```
 

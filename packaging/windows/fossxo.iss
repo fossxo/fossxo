@@ -30,15 +30,14 @@ DefaultGroupName="{#NAME}"
 [Files]
 Source: "{#TARGET_DIR}\release\{#EXE_NAME}"; DestDir: "{app}"
 Source: "{#PROJECT_DIR}\config\*"; DestDir: "{app}\config"; Flags: ignoreversion
-; Uncomment the following when adding assets
-; Source: "{#PROJECT_DIR}\assets\*"; DestDir: "{app}\assets"; Flags: ignoreversion recursesubdirs
+Source: "{#PROJECT_DIR}\assets\*"; DestDir: "{app}\assets"; Flags: ignoreversion recursesubdirs
 
-; User manual files
-Source: "{#TARGET_DIR}\user-manual\*"; DestDir: "{app}\user-manual"; Flags: ignoreversion recursesubdirs
+; Player manual files
+Source: "{#TARGET_DIR}\player-manual\*"; DestDir: "{app}\player-manual"; Flags: ignoreversion recursesubdirs
 
 [Icons]
 Name: "{group}\{#NAME}"; Filename: "{app}\{#EXE_NAME}"; Comment: "{#DESCRIPTION}"
-; Name: "{group}\{#NAME} User Manual"; Filename: "{app}\user-manual\index.html"
+Name: "{group}\{#NAME} Manual"; Filename: "{app}\player-manual\index.html"
 Name: "{autodesktop}\{#NAME}"; Filename: "{app}\{#EXE_NAME}"; Comment: "{#DESCRIPTION}"; Tasks: desktopicon
 
 [Tasks]

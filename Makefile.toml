@@ -20,7 +20,7 @@ alias = "_user-build"
 [tasks._user-build]
 description = "Builds and runs the game in release mode."
 dependencies = [
-    "_build-user-manual",
+    "_build-player-manual",
     "_run-release",
 ]
 
@@ -63,7 +63,7 @@ dependencies = [
     "_clippy-strict",
     "_deny",
     "_fmt-check",
-    "_build-user-manual",
+    "_build-player-manual",
     "_test",
 ]
 
@@ -89,7 +89,7 @@ alias = "_package"
 
 [tasks._package]
 dependencies = [
-    "_build-user-manual",
+    "_build-player-manual",
     "_build-release",
     "_build_package",
 ]
@@ -182,13 +182,13 @@ command = "cargo"
 args = ["deny", "check"]
 
 
-[tasks._build-user-manual]
+[tasks._build-player-manual]
 command = "mdbook"
 install_crate = { crate_name = "mdbook", binary = "mdbook", test_arg = "--help" }
-args = ["build", "user-manual"]
-dependencies = ["_build-user-manual-license-files"]
+args = ["build", "player-manual"]
+dependencies = ["_build-player-manual-license-files"]
 
-[tasks._build-user-manual-license-files]
+[tasks._build-player-manual-license-files]
 install_crate = { crate_name = "cargo-about", binary = "cargo-about", test_arg = "--help" }
 command = "cargo"
 args = ["run", "--bin", "generate-license"]
