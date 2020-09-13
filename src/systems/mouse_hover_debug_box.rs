@@ -32,7 +32,7 @@ impl<'a> System<'a> for MouseHoverDebugBoxSystem {
                 debug_lines.draw_rectangle(
                     square.bottom_left().xy(),
                     square.top_right().xy(),
-                    square.center_point().z,
+                    square.center().z,
                     component.color,
                 );
             }

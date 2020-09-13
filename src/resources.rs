@@ -323,7 +323,10 @@ impl Grid {
                 row: TTT_BOARD_SIZE - 1,
                 column: *column,
             });
-            Some(Line::new(start_square.bottom(), end_square.top()))
+            Some(Line::new(
+                start_square.bottom_center(),
+                end_square.top_center(),
+            ))
         } else if let Some((row, _)) = rows_found
             .iter()
             .find(|(_row, num)| **num >= TTT_BOARD_SIZE)
@@ -336,7 +339,10 @@ impl Grid {
                 row: *row,
                 column: TTT_BOARD_SIZE - 1,
             });
-            Some(Line::new(start_square.left(), end_square.right()))
+            Some(Line::new(
+                start_square.center_left(),
+                end_square.center_right(),
+            ))
         } else {
             None
         }
@@ -683,7 +689,7 @@ mod tests {
 
         let actual_square = grid.position_to_square(position);
 
-        assert_ulps_eq!(actual_square.center_point(), expected_square.center_point());
+        assert_ulps_eq!(actual_square.center(), expected_square.center());
         assert_ulps_eq!(actual_square.size(), expected_square.size());
     }
 }

@@ -117,15 +117,15 @@ impl DebugEnvironment {
     fn add_center_points(&self, debug_lines: &mut DebugLinesComponent, grid: &resources::Grid) {
         for square in grid.squares() {
             let length = square.size() * CENTER_POINT_SIZE_FACTOR;
-            let center_point_square = Square::new(square.center_point(), length);
+            let center_point_square = Square::new(square.center(), length);
             debug_lines.add_line(
-                center_point_square.bottom(),
-                center_point_square.top(),
+                center_point_square.bottom_center(),
+                center_point_square.top_center(),
                 self.color,
             );
             debug_lines.add_line(
-                center_point_square.left(),
-                center_point_square.right(),
+                center_point_square.center_left(),
+                center_point_square.center_right(),
                 self.color,
             );
         }
@@ -133,7 +133,7 @@ impl DebugEnvironment {
 
     // Add an X mark to the debug lines component in the indicated square.
     fn add_x_mark(&self, debug_lines: &mut DebugLinesComponent, square: &Square) {
-        let x_mark_square = Square::new(square.center_point(), square.size() * MARK_SIZE_FACTOR);
+        let x_mark_square = Square::new(square.center(), square.size() * MARK_SIZE_FACTOR);
         debug_lines.add_line(
             x_mark_square.top_left(),
             x_mark_square.bottom_right(),
@@ -150,7 +150,7 @@ impl DebugEnvironment {
     fn add_o_mark(&self, debug_lines: &mut DebugLinesComponent, square: &Square) {
         let radius = square.size() * MARK_SIZE_FACTOR / 2.0;
         let points = 32;
-        debug_lines.add_circle_2d(square.center_point(), radius, points, self.color);
+        debug_lines.add_circle_2d(square.center(), radius, points, self.color);
     }
 }
 

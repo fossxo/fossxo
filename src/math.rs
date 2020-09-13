@@ -60,7 +60,7 @@ impl Line {
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Square {
     // The square's center point.
-    center_point: Point3<f32>,
+    center: Point3<f32>,
     // Half of the square's with or height.
     // Storing half the size makes the math for the accessor functions easier.
     half_size: f32,
@@ -71,17 +71,17 @@ impl Square {
     ///
     /// # Panics
     /// The size of the square must be zero or greater.
-    pub fn new(center_point: Point3<f32>, size: f32) -> Self {
+    pub fn new(center: Point3<f32>, size: f32) -> Self {
         assert!(size >= 0.0, "The size of the square cannot be negative.");
         Self {
-            center_point,
+            center,
             half_size: size / 2.0,
         }
     }
 
     /// Gets the square's center point.
-    pub fn center_point(&self) -> Point3<f32> {
-        self.center_point
+    pub fn center(&self) -> Point3<f32> {
+        self.center
     }
 
     /// Gets the square's size -- that is the width or height, of the square.
@@ -90,74 +90,58 @@ impl Square {
     }
 
     /// Gets the top of the square directly above the center point.
-    pub fn top(&self) -> Point3<f32> {
-        Point3::new(
-            self.center_point.x,
-            self.center_point.y + self.half_size,
-            self.center_point.z,
-        )
+    pub fn top_center(&self) -> Point3<f32> {
+        Point3::new(self.center.x, self.center.y + self.half_size, self.center.z)
     }
 
     /// Gets the bottom of the square directly below the center point.
-    pub fn bottom(&self) -> Point3<f32> {
-        Point3::new(
-            self.center_point.x,
-            self.center_point.y - self.half_size,
-            self.center_point.z,
-        )
+    pub fn bottom_center(&self) -> Point3<f32> {
+        Point3::new(self.center.x, self.center.y - self.half_size, self.center.z)
     }
 
     /// Gets the left size of the square directly to the left of the center point.
-    pub fn left(&self) -> Point3<f32> {
-        Point3::new(
-            self.center_point.x - self.half_size,
-            self.center_point.y,
-            self.center_point.z,
-        )
+    pub fn center_left(&self) -> Point3<f32> {
+        Point3::new(self.center.x - self.half_size, self.center.y, self.center.z)
     }
 
     /// Gets the right side of the square directly to the right of the center point.
-    pub fn right(&self) -> Point3<f32> {
-        Point3::new(
-            self.center_point.x + self.half_size,
-            self.center_point.y,
-            self.center_point.z,
-        )
+    pub fn center_right(&self) -> Point3<f32> {
+        Point3::new(self.center.x + self.half_size, self.center.y, self.center.z)
     }
 
     /// Gets the top left corner of the square.
     pub fn top_left(&self) -> Point3<f32> {
         Point3::new(
-            self.center_point.x - self.half_size,
-            self.center_point.y + self.half_size,
-            self.center_point.z,
+            self.center.x - self.half_size,
+            self.center.y + self.half_size,
+            self.center.z,
         )
     }
 
     /// Gets the top right corner of the square.
     pub fn top_right(&self) -> Point3<f32> {
         Point3::new(
-            self.center_point.x + self.half_size,
-            self.center_point.y + self.half_size,
-            self.center_point.z,
+            self.center.x + self.half_size,
+            self.center.y + self.half_size,
+            self.center.z,
         )
     }
 
     /// Gets the bottom left corner of the square.
     pub fn bottom_left(&self) -> Point3<f32> {
         Point3::new(
-            self.center_point.x - self.half_size,
-            self.center_point.y - self.half_size,
-            self.center_point.z,
+            self.center.x - self.half_size,
+            self.center.y - self.half_size,
+            self.center.z,
         )
     }
 
     /// Gets the bottom right corner of the square.
     pub fn bottom_right(&self) -> Point3<f32> {
         Point3::new(
-            self.center_point.x + self.half_size,
-            self.center_point.y - self.half_size,
-            self.center_point.z,
+            self.center.x + self.half_size,
+            self.center.y - self.half_size,
+            self.center.z,
         )
     }
 }
@@ -196,12 +180,12 @@ mod tests {
 
         let square = Square::new(center_point, size);
 
-        assert_ulps_eq!(square.center_point(), center_point);
+        assert_ulps_eq!(square.center(), center_point);
         assert_ulps_eq!(square.size(), size);
     }
 
     #[test]
-    fn square_top_should_get_point_plus_y_above_center_point() {
+    fn square_top_center_should_get_point_plus_y_above_center_point() {
         let size = 4.0;
         let half_size = size / 2.0;
         let center_point = Point3::new(1.0, 1.0, 3.0);
@@ -209,11 +193,11 @@ mod tests {
 
         let square = Square::new(center_point, size);
 
-        assert_ulps_eq!(square.top(), expected_top);
+        assert_ulps_eq!(square.top_center(), expected_top);
     }
 
     #[test]
-    fn square_bottom_should_get_point_minus_y_below_center_point() {
+    fn square_bottom_center_should_get_point_minus_y_below_center_point() {
         let size = 4.0;
         let half_size = size / 2.0;
         let center_point = Point3::new(1.0, 1.0, 3.0);
@@ -222,11 +206,11 @@ mod tests {
 
         let square = Square::new(center_point, size);
 
-        assert_ulps_eq!(square.bottom(), expected_bottom);
+        assert_ulps_eq!(square.bottom_center(), expected_bottom);
     }
 
     #[test]
-    fn square_left_should_get_point_minus_x_from_center_point() {
+    fn square_center_left_should_get_point_minus_x_from_center_point() {
         let size = 4.0;
         let half_size = size / 2.0;
         let center_point = Point3::new(1.0, 1.0, 3.0);
@@ -234,11 +218,11 @@ mod tests {
 
         let square = Square::new(center_point, size);
 
-        assert_ulps_eq!(square.left(), expected_left);
+        assert_ulps_eq!(square.center_left(), expected_left);
     }
 
     #[test]
-    fn square_right_should_get_point_plus_x_from_center_point() {
+    fn square_center_right_should_get_point_plus_x_from_center_point() {
         let size = 4.0;
         let half_size = size / 2.0;
         let center_point = Point3::new(1.0, 1.0, 3.0);
@@ -247,7 +231,7 @@ mod tests {
 
         let square = Square::new(center_point, size);
 
-        assert_ulps_eq!(square.right(), expected_right);
+        assert_ulps_eq!(square.center_right(), expected_right);
     }
 
     #[test]
