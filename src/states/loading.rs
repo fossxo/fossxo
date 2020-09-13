@@ -1,8 +1,9 @@
-use amethyst::{prelude::*, ui};
+use amethyst::prelude::*;
 
 use crate::environments::Environments;
 use crate::events;
 use crate::states;
+use crate::ui;
 
 /// Loads the assets needed for the game.
 ///
@@ -15,7 +16,10 @@ impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for Loading {
 
         // Create necessary resources that for some reason the UI system does not make.
         data.world
-            .insert(ui::Widgets::<ui::UiLabel, u32>::default());
+            .insert(amethyst::ui::Widgets::<amethyst::ui::UiLabel, u32>::default());
+
+        // Load the UI style resources.
+        ui::load_style(data.world);
 
         // Create the environments resource and tell it to start loading its
         // required assets.

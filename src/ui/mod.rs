@@ -4,3 +4,6 @@
 //! game controls.
 
 mod entity_observers;
+mod style;
+
+pub use style::*;
