@@ -13,9 +13,10 @@ mod math;
 mod resources;
 mod states;
 mod systems;
+mod ui;
 
 use amethyst::{
-    core::frame_limiter, core::transform::TransformBundle, input, prelude::*, renderer, ui, window,
+    core::frame_limiter, core::transform::TransformBundle, input, prelude::*, renderer, window,
 };
 
 use structopt::StructOpt;
@@ -32,7 +33,7 @@ fn main() -> amethyst::Result<()> {
             input::InputBundle::<events::InputBindingTypes>::new()
                 .with_bindings_from_file(file_io::input_bindings_file()?)?,
         )?
-        .with_bundle(ui::UiBundle::<events::InputBindingTypes>::new())?
+        .with_bundle(amethyst::ui::UiBundle::<events::InputBindingTypes>::new())?
         .with_bundle(systems::GameBundle)?
         .with_bundle(systems::EnvironmentsBundle)?
         .with_bundle(
@@ -41,7 +42,7 @@ fn main() -> amethyst::Result<()> {
                     renderer::RenderToWindow::from_config(display_configuration())
                         .with_clear([0.0, 0.0, 0.0, 1.0]),
                 )
-                .with_plugin(ui::RenderUi::default())
+                .with_plugin(amethyst::ui::RenderUi::default())
                 .with_plugin(renderer::RenderFlat2D::default())
                 .with_plugin(renderer::RenderDebugLines::default()),
         )?;
