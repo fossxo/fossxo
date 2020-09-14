@@ -5,7 +5,7 @@ use std::collections::HashMap;
 ///
 /// This structure is generic on the type of data given to the callback and the
 /// return parameter.
-struct EntityObservers<TData, TReturn = ()> {
+pub(super) struct EntityObservers<TData, TReturn = ()> {
     observers: HashMap<ecs::Entity, fn(&mut TData, &mut ecs::World) -> TReturn>,
 }
 

@@ -35,7 +35,7 @@ pub fn load_style(world: &mut World) {
         text: label.clone(),
         width: 600.0,
         height: 75.0,
-        normal: UiImage::SolidColor(black),
+        normal: UiImage::SolidColor([0.2, 0.2, 0.2, 1.0]),
         hover: UiImage::SolidColor([0.1, 0.1, 0.1, 1.0]),
         press: UiImage::SolidColor([0.15, 0.15, 0.15, 1.0]),
     };
@@ -52,32 +52,32 @@ pub fn load_style(world: &mut World) {
 }
 
 #[derive(Clone)]
-struct Style {
-    button: ButtonStyle,
-    title_text: TextStyle,
-    menu: MenuStyle,
-    paragraph: TextStyle,
-    label: TextStyle,
+pub(super) struct Style {
+    pub button: ButtonStyle,
+    pub title_text: TextStyle,
+    pub menu: MenuStyle,
+    pub paragraph: TextStyle,
+    pub label: TextStyle,
 }
 
 #[derive(Clone)]
-struct ButtonStyle {
-    text: TextStyle,
-    width: f32,
-    height: f32,
-    normal: UiImage,
-    hover: UiImage,
-    press: UiImage,
+pub(super) struct ButtonStyle {
+    pub text: TextStyle,
+    pub width: f32,
+    pub height: f32,
+    pub normal: UiImage,
+    pub hover: UiImage,
+    pub press: UiImage,
 }
 
 #[derive(Clone)]
-struct TextStyle {
-    font: FontHandle,
-    font_size: f32,
-    color: [f32; 4],
+pub(super) struct TextStyle {
+    pub font: FontHandle,
+    pub font_size: f32,
+    pub color: [f32; 4],
 }
 
 #[derive(Clone)]
-struct MenuStyle {
-    background: UiImage,
+pub(super) struct MenuStyle {
+    pub background: UiImage,
 }

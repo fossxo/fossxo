@@ -1,16 +1,16 @@
-use amethyst::{core::ecs, input, prelude::*, ui};
+use amethyst::{core::ecs, input, prelude::*};
 use contracts::*;
 use open_ttt_lib as ttt;
 
 use crate::components::Player;
 use crate::events;
+use crate::ui;
 
 use super::{Game, GameStateOptions, MainMenu};
 
 /// Shows the single-player option UI widgets.
 pub struct SinglePlayerMenu {
-    // The UI root entity.
-    ui_root: Option<ecs::Entity>,
+    menu: Option<ui::Menu<Self, NextState>>,
     // The mark the player wishes to use.
     selected_player: Player,
 }
@@ -19,20 +19,20 @@ impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for SinglePlayerMenu {
     fn on_start(&mut self, data: StateData<'_, GameData<'a, 'b>>) {
         log::info!("Opened single-player menu.");
 
-        // self.ui_root = Some(
-        //     data.world
-        //         .exec(|mut creator: ui::UiCreator<'_>| creator.create("ui/main_menu.ron", ())),
-        // );
+        let mut menu = ui::Menu::new();
+        menu.set_title(data.world, "Single Player");
+        menu.set_close_button(data.world, "Back", Self::on_back_button_click);
+        menu.add_button(data.world, "Easy", Self::on_easy_button_click);
+        menu.add_button(data.world, "Medium", Self::on_medium_button_click);
+        menu.add_button(data.world, "Hard", Self::on_hard_button_click);
+        self.menu = Some(menu);
     }
 
-    #[post(self.ui_root == None)]
+    #[post(self.menu.is_none())]
     fn on_stop(&mut self, data: StateData<'_, GameData<'a, 'b>>) {
-        if let Some(root_entity) = self.ui_root {
-            data.world
-                .delete_entity(root_entity)
-                .expect("Failed to close single-player menu.");
+        if let Some(mut menu) = self.menu.take() {
+            menu.delete(data.world);
         }
-        self.ui_root = None;
 
         log::info!("Closed single-player menu.");
     }
@@ -65,7 +65,7 @@ impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for SinglePlayerMenu {
 impl<'a, 'b> SinglePlayerMenu {
     pub fn new() -> Self {
         Self {
-            ui_root: None,
+            menu: None,
             selected_player: Player::X,
         }
     }
@@ -91,33 +91,49 @@ impl<'a, 'b> SinglePlayerMenu {
         data: StateData<'_, GameData<'a, 'b>>,
         ui_event: &events::UiEvent,
     ) -> Trans<GameData<'a, 'b>, events::StateEvent> {
+        if let Some(menu) = self.menu.as_mut() {
+            if let Some(callback) = menu.handle_ui_event(data.world, ui_event) {
+                let next_state = callback(self, data.world);
+                return next_state.as_trans();
+            }
+        }
         Trans::None
     }
 
-    fn on_easy_button_click(&mut self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
-        self.start_single_player_game(ttt::ai::Difficulty::Easy)
+    fn on_easy_button_click(&mut self, _world: &mut ecs::World) -> NextState {
+        NextState::SinglePlayerGame(ttt::ai::Difficulty::Easy, self.selected_player)
     }
 
-    fn on_medium_button_click(&mut self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
-        self.start_single_player_game(ttt::ai::Difficulty::Medium)
+    fn on_medium_button_click(&mut self, _world: &mut ecs::World) -> NextState {
+        NextState::SinglePlayerGame(ttt::ai::Difficulty::Medium, self.selected_player)
     }
 
-    fn on_hard_button_click(&mut self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
-        self.start_single_player_game(ttt::ai::Difficulty::Hard)
+    fn on_hard_button_click(&mut self, _world: &mut ecs::World) -> NextState {
+        NextState::SinglePlayerGame(ttt::ai::Difficulty::Hard, self.selected_player)
     }
 
-    fn on_back_button_click(&mut self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
-        Trans::Switch(Box::new(MainMenu::new()))
+    fn on_back_button_click(&mut self, _world: &mut ecs::World) -> NextState {
+        NextState::MainMenu
     }
+}
 
-    fn start_single_player_game(
-        &mut self,
-        difficulty: ttt::ai::Difficulty,
-    ) -> Trans<GameData<'a, 'b>, events::StateEvent> {
-        let game_state = Game::new(GameStateOptions::SinglePlayer(
-            difficulty,
-            self.selected_player,
-        ));
-        Trans::Switch(Box::new(game_state))
+// Helper type for selecting the next state to transition to.
+enum NextState {
+    None,
+    SinglePlayerGame(ttt::ai::Difficulty, Player),
+    MainMenu,
+}
+
+impl<'a, 'b> NextState {
+    // Converts the next state variant into a state transition.
+    fn as_trans(&self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
+        match self {
+            Self::None => Trans::None,
+            Self::SinglePlayerGame(difficulty, player) => {
+                let game_state = Game::new(GameStateOptions::SinglePlayer(*difficulty, *player));
+                Trans::Switch(Box::new(game_state))
+            }
+            Self::MainMenu => Trans::Switch(Box::new(MainMenu::new())),
+        }
     }
 }

@@ -1,26 +1,20 @@
-use amethyst::{core::ecs, input, prelude::*, ui};
+use amethyst::{core::ecs, input, prelude::*};
 use contracts::*;
 
 use crate::events;
 use crate::file_io;
+use crate::ui;
 
 use super::*;
 
-const SINGLE_PLAYER_BUTTON_ID: &str = "single_player_button";
-const MULTIPLAYER_BUTTON_ID: &str = "multiplayer_button";
-const CREDITS_BUTTON_ID: &str = "credits_button";
-const HELP_BUTTON_ID: &str = "help_button";
-const EXIT_ID_BUTTON_ID: &str = "exit_button";
-
 /// Shows the main menu UI widgets.
 pub struct MainMenu {
-    // The UI root entity.
-    ui_root: Option<ecs::Entity>,
+    menu: Option<ui::Menu<Self, NextState>>,
 }
 
 impl<'a, 'b> MainMenu {
     pub fn new() -> Self {
-        Self { ui_root: None }
+        Self { menu: None }
     }
 
     // Handles window related events.
@@ -42,56 +36,22 @@ impl<'a, 'b> MainMenu {
         data: StateData<'_, GameData<'a, 'b>>,
         ui_event: &events::UiEvent,
     ) -> Trans<GameData<'a, 'b>, events::StateEvent> {
-        if ui_event.event_type == ui::UiEventType::Click {
-            data.world.exec(|ui_finder: ui::UiFinder<'_>| {
-                // Determine which handler to call by comparing the target entity with
-                // the those corresponding to our buttons.
-                if Some(ui_event.target) == ui_finder.find(SINGLE_PLAYER_BUTTON_ID) {
-                    self.on_single_player_button_click()
-                } else if Some(ui_event.target) == ui_finder.find(MULTIPLAYER_BUTTON_ID) {
-                    self.on_multiplayer_button_click()
-                } else if Some(ui_event.target) == ui_finder.find(CREDITS_BUTTON_ID) {
-                    self.on_credits_button_click()
-                } else if Some(ui_event.target) == ui_finder.find(HELP_BUTTON_ID) {
-                    self.on_help_button_click()
-                } else if Some(ui_event.target) == ui_finder.find(EXIT_ID_BUTTON_ID) {
-                    self.on_exit_button_click()
-                } else {
-                    Trans::None
-                }
-            })
-        } else {
-            Trans::None
+        if let Some(menu) = self.menu.as_mut() {
+            if let Some(callback) = menu.handle_ui_event(data.world, ui_event) {
+                let next_state = callback(self, data.world);
+                return next_state.as_trans();
+            }
         }
+        Trans::None
     }
 
-    fn on_single_player_button_click(&mut self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
-        // Switch to the single player menus state so the user can configure
-        // the single player options.
-        Trans::Switch(Box::new(SinglePlayerMenu::new()))
-    }
-
-    fn on_multiplayer_button_click(&mut self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
-        // Start a new multiplayer game.
-        Trans::Switch(Box::new(Game::new(GameStateOptions::Multiplayer)))
-    }
-
-    fn on_credits_button_click(&mut self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
-        Trans::Switch(Box::new(CreditsMenu::new()))
-    }
-
-    fn on_help_button_click(&mut self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
+    fn on_help_button_click(&mut self, _world: &mut ecs::World) -> NextState {
         match file_io::open_player_manual() {
             Ok(()) => log::info!("Opened player manual in the default browser."),
             Err(e) => log::error!("Unable to open the player manual. Error details: {}", e),
         }
 
-        Trans::None
-    }
-
-    fn on_exit_button_click(&mut self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
-        // Exit the game.
-        Trans::Quit
+        NextState::None
     }
 }
 
@@ -99,20 +59,24 @@ impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for MainMenu {
     fn on_start(&mut self, data: StateData<'_, GameData<'a, 'b>>) {
         log::info!("Opened main menu.");
 
-        self.ui_root = Some(
-            data.world
-                .exec(|mut creator: ui::UiCreator<'_>| creator.create("ui/main_menu.ron", ())),
-        );
+        let mut menu = ui::Menu::new();
+        menu.set_title(data.world, "FossXO");
+        menu.set_close_button(data.world, "Exit", |_, _| NextState::Quit);
+        menu.add_button(data.world, "Single-player", |_, _| {
+            NextState::SinglePlayerMenu
+        });
+        menu.add_button(data.world, "Multiplayer", |_, _| NextState::MultiplayerGame);
+        menu.add_separator(data.world);
+        menu.add_button(data.world, "Credits", |_, _| NextState::CreditsMenu);
+        menu.add_button(data.world, "Help", Self::on_help_button_click);
+        self.menu = Some(menu);
     }
 
-    #[post(self.ui_root == None)]
+    #[post(self.menu.is_none())]
     fn on_stop(&mut self, data: StateData<'_, GameData<'a, 'b>>) {
-        if let Some(root_entity) = self.ui_root {
-            data.world
-                .delete_entity(root_entity)
-                .expect("Failed to close main menu.");
+        if let Some(mut menu) = self.menu.take() {
+            menu.delete(data.world);
         }
-        self.ui_root = None;
 
         log::info!("Closed main menu.");
     }
@@ -139,5 +103,29 @@ impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for MainMenu {
         data.data.update(&data.world);
 
         Trans::None
+    }
+}
+
+// Helper type for selecting the next state to transition to.
+enum NextState {
+    None,
+    MultiplayerGame,
+    SinglePlayerMenu,
+    CreditsMenu,
+    Quit,
+}
+
+impl<'a, 'b> NextState {
+    // Converts the next state variant into a state transition.
+    fn as_trans(&self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
+        match self {
+            Self::None => Trans::None,
+            Self::MultiplayerGame => {
+                Trans::Switch(Box::new(Game::new(GameStateOptions::Multiplayer)))
+            }
+            Self::SinglePlayerMenu => Trans::Switch(Box::new(SinglePlayerMenu::new())),
+            Self::CreditsMenu => Trans::Switch(Box::new(CreditsMenu::new())),
+            Self::Quit => Trans::Quit,
+        }
     }
 }
