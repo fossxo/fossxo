@@ -11,8 +11,7 @@ pub fn assets_dir() -> Result<path::PathBuf, io::Error> {
 
 /// Gets the path to the game's input bindings file.
 pub fn input_bindings_file() -> Result<path::PathBuf, io::Error> {
-    let config_dir = application_dir("config")?;
-    Ok(config_dir.join("input.ron"))
+    Ok(assets_dir()?.join("data").join("input.ron"))
 }
 
 /// Opens the game's player manual in the default browser.

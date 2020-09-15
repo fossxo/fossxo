@@ -29,7 +29,6 @@ DefaultGroupName="{#NAME}"
 
 [Files]
 Source: "{#TARGET_DIR}\release\{#EXE_NAME}"; DestDir: "{app}"
-Source: "{#PROJECT_DIR}\config\*"; DestDir: "{app}\config"; Flags: ignoreversion
 Source: "{#PROJECT_DIR}\assets\*"; DestDir: "{app}\assets"; Flags: ignoreversion recursesubdirs
 
 ; Player manual files
