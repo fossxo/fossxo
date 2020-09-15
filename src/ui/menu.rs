@@ -59,7 +59,7 @@ impl<TData, TReturn> Menu<TData, TReturn> {
         ui_event: &events::UiEvent,
     ) -> Option<&fn(&mut TData, &mut ecs::World) -> TReturn> {
         match ui_event.event_type {
-            UiEventType::Click => self.observers.observer(ui_event.target),
+            UiEventType::Click => self.observers.get(ui_event.target),
             _ => None,
         }
     }
@@ -111,7 +111,7 @@ impl<TData, TReturn> Menu<TData, TReturn> {
             .build_from_world(&world);
 
         self.add_owned_button(&button);
-        self.observers.add_observer(button.image_entity, on_close);
+        self.observers.add(button.image_entity, on_close);
     }
 
     /// Adds a button to the menu.
@@ -133,7 +133,7 @@ impl<TData, TReturn> Menu<TData, TReturn> {
         self.next_place -= style.button.height + 10.0;
         self.next_tab_order += 1;
         self.add_owned_button(&button);
-        self.observers.add_observer(button.image_entity, on_press);
+        self.observers.add(button.image_entity, on_press);
     }
 
     /// Adds a separator between the current content.

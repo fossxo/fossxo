@@ -18,7 +18,7 @@ impl<TData, TReturn> EntityObservers<TData, TReturn> {
     }
 
     /// Associates a callback with the given entity.
-    pub fn add_observer(
+    pub fn add(
         &mut self,
         entity: ecs::Entity,
         callback: fn(&mut TData, &mut ecs::World) -> TReturn,
@@ -27,17 +27,14 @@ impl<TData, TReturn> EntityObservers<TData, TReturn> {
     }
 
     /// Removes the associated callback for the given entity.
-    pub fn remove_observer(&mut self, entity: ecs::Entity) {
+    pub fn remove(&mut self, entity: ecs::Entity) {
         self.observers.remove(&entity);
     }
 
     /// Gets the callback associated with the provided entity.
     ///
     /// None is returned if no callback is found.
-    pub fn observer(
-        &self,
-        entity: ecs::Entity,
-    ) -> Option<&fn(&mut TData, &mut ecs::World) -> TReturn> {
+    pub fn get(&self, entity: ecs::Entity) -> Option<&fn(&mut TData, &mut ecs::World) -> TReturn> {
         self.observers.get(&entity)
     }
 }
@@ -59,28 +56,28 @@ mod tests {
     }
 
     #[test]
-    fn entity_observers_observer_when_no_entity_should_return_none() {
+    fn entity_observers_get_when_no_entity_should_return_none() {
         let observers: EntityObservers<i32> = EntityObservers::new();
         let mut world = build_world();
         let entity = world.create_entity().build();
 
         // Attempt to get a callback that has not been previously added.
-        let callback = observers.observer(entity);
+        let callback = observers.get(entity);
 
         assert!(callback.is_none());
     }
 
     #[test]
-    fn entity_observers_observer_when_contains_entity_should_return_correct_callback() {
+    fn entity_observers_get_when_contains_entity_should_return_correct_callback() {
         let mut world = build_world();
         let entity = world.create_entity().build();
         let mut expected_data = 42;
         let mut observers: EntityObservers<i32, i32> = EntityObservers::new();
         // Add a callback that simply passes through its data.
-        observers.add_observer(entity, |data, _world| *data);
+        observers.add(entity, |data, _world| *data);
 
         // Get the callback back out and invoke it to see if it passes through its data.
-        let callback = observers.observer(entity);
+        let callback = observers.get(entity);
         let actual_data = callback.unwrap()(&mut expected_data, &mut world);
 
         assert_eq!(actual_data, expected_data);
@@ -91,11 +88,11 @@ mod tests {
         let mut world = build_world();
         let entity = world.create_entity().build();
         let mut observers: EntityObservers<i32, i32> = EntityObservers::new();
-        observers.add_observer(entity, |data, _world| *data);
+        observers.add(entity, |data, _world| *data);
 
-        observers.remove_observer(entity);
+        observers.remove(entity);
 
-        let callback = observers.observer(entity);
+        let callback = observers.get(entity);
         assert!(callback.is_none());
     }
 }

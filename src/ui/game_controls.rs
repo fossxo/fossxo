@@ -45,7 +45,7 @@ impl<TData, TReturn> GameControls<TData, TReturn> {
         ui_event: &events::UiEvent,
     ) -> Option<&fn(&mut TData, &mut ecs::World) -> TReturn> {
         match ui_event.event_type {
-            UiEventType::Click => self.observers.observer(ui_event.target),
+            UiEventType::Click => self.observers.get(ui_event.target),
             _ => None,
         }
     }
@@ -68,7 +68,7 @@ impl<TData, TReturn> GameControls<TData, TReturn> {
             .build_from_world(&world);
 
         self.add_owned_button(&button);
-        self.observers.add_observer(button.image_entity, on_press);
+        self.observers.add(button.image_entity, on_press);
     }
 
     /// Show's the game over button.
@@ -94,14 +94,14 @@ impl<TData, TReturn> GameControls<TData, TReturn> {
             .with_size(style.button.width, style.button.height)
             .build_from_world(&world);
 
-        self.observers.add_observer(button.image_entity, on_press);
+        self.observers.add(button.image_entity, on_press);
         self.game_over_button = Some(button);
     }
 
     /// Hide's the game over button.
     pub fn hide_game_over_button(&mut self, world: &mut ecs::World) {
         if let Some(button) = self.game_over_button.take() {
-            self.observers.remove_observer(button.image_entity);
+            self.observers.remove(button.image_entity);
             world
                 .delete_entity(button.text_entity)
                 .expect("Unable to delete game over button.");
