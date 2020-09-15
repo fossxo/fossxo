@@ -67,7 +67,6 @@ impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for MainMenu {
         });
         menu.add_button(data.world, "Multiplayer", |_, _| NextState::MultiplayerGame);
         menu.add_separator(data.world);
-        menu.add_button(data.world, "Credits", |_, _| NextState::CreditsMenu);
         menu.add_button(data.world, "Help", Self::on_help_button_click);
         self.menu = Some(menu);
     }
@@ -111,7 +110,6 @@ enum NextState {
     None,
     MultiplayerGame,
     SinglePlayerMenu,
-    CreditsMenu,
     Quit,
 }
 
@@ -124,7 +122,6 @@ impl<'a, 'b> NextState {
                 Trans::Switch(Box::new(Game::new(GameStateOptions::Multiplayer)))
             }
             Self::SinglePlayerMenu => Trans::Switch(Box::new(SinglePlayerMenu::new())),
-            Self::CreditsMenu => Trans::Switch(Box::new(CreditsMenu::new())),
             Self::Quit => Trans::Quit,
         }
     }
