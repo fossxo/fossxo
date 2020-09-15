@@ -1,10 +1,10 @@
 use amethyst::ecs;
 use amethyst::prelude::*;
+use amethyst::ui::{Anchor, UiButton, UiButtonBuilder, UiEventType, UiLabelBuilder};
 use contracts::*;
 
 use super::*;
 use crate::{components, events};
-use amethyst::ui::{Anchor, UiButton, UiButtonBuilder, UiEventType, UiLabelBuilder};
 
 pub struct GameControls<TData, TReturn = ()> {
     owned_entities: Vec<ecs::Entity>,

@@ -2,7 +2,6 @@
 use amethyst::utils::application_dir;
 use std::error::Error;
 use std::{env, io, path};
-use webbrowser;
 
 /// Gets the path to the game's asset directory.
 pub fn assets_dir() -> Result<path::PathBuf, io::Error> {

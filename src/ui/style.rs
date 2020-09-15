@@ -9,7 +9,6 @@ use std::path::Path;
 /// Loads the UI style and places it in the world.
 pub fn load_style(world: &mut World) {
     let white = [1.0, 1.0, 1.0, 1.0];
-    let black = [0.0, 0.0, 0.0, 0.0];
 
     let font = {
         let loader = world.read_resource::<Loader>();
@@ -24,7 +23,7 @@ pub fn load_style(world: &mut World) {
     };
 
     let label = TextStyle {
-        font: font.clone(),
+        font,
         font_size: 50.0,
         color: white,
     };
@@ -47,7 +46,7 @@ pub fn load_style(world: &mut World) {
         size: 48.0,
         normal: UiImage::Texture(load_texture(world, "hamburger-icon-normal.png")),
         hover: UiImage::Texture(hamburger_icon_hover.clone()),
-        press: UiImage::Texture(hamburger_icon_hover.clone()),
+        press: UiImage::Texture(hamburger_icon_hover),
     };
 
     let ui_style = Style {
@@ -56,7 +55,7 @@ pub fn load_style(world: &mut World) {
         title_text,
         menu,
         paragraph: label.clone(),
-        label: label.clone(),
+        label,
     };
 
     world.insert(ui_style);

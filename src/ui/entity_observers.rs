@@ -49,8 +49,7 @@ mod tests {
     // Builds a world that has an entities resource.
     fn build_world() -> ecs::World {
         let mut world = ecs::World::default();
-        let mut sadf = EntitiesRes::default();
-        world.insert(sadf);
+        world.insert(EntitiesRes::default());
 
         world
     }

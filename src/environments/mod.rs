@@ -92,6 +92,7 @@ impl Environments {
     ///
     /// When the debug environment is enabled, grid lines, marks, and other
     /// annotations are drawn on top of the current environment.
+    #[allow(dead_code)]
     pub fn debug(&mut self, world: &mut World, debug_options: &DebugOptions) {
         // Delete the old debug environment and build a new one.
         let was_alive = self.debug_environment.is_alive();

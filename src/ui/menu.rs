@@ -1,22 +1,23 @@
-use super::style::Style;
-use super::EntityObservers;
-use crate::{components, events};
-use amethyst::ecs;
-use amethyst::prelude::*;
-use amethyst::ui::{
-    Anchor, Interactable, LineMode, Selected, UiButton, UiButtonBuilder, UiEventType, UiImage,
-    UiText, UiTransform,
-};
+use super::*;
+use crate::events;
+
+use amethyst::ui::{Anchor, LineMode, UiButton, UiButtonBuilder, UiEventType, UiText, UiTransform};
+use amethyst::{ecs, prelude::*};
+
 use contracts::*;
 
 const CLOSE_TAB_ORDER: u32 = 100;
+// Amount of space the separator takes.
+const SEPARATOR_HEIGHT: f32 = 20.0;
+// Spacing between elements.
+const MARGIN: f32 = 10.0;
 
 /// Allows creating Menus related widgets, provides UI event handling logic, and
 /// holds the underlying entities.
 pub struct Menu<TData, TReturn = ()> {
     owned_entities: Vec<ecs::Entity>,
     observers: EntityObservers<TData, TReturn>,
-    next_place: f32,
+    next_y_offset: f32,
     next_tab_order: u32,
 }
 
@@ -26,16 +27,9 @@ impl<TData, TReturn> Menu<TData, TReturn> {
         Self {
             owned_entities: Vec::new(),
             observers: EntityObservers::new(),
-            next_place: 150.0,
+            next_y_offset: 150.0,
             next_tab_order: 1,
         }
-    }
-
-    /// Preforms the automatic layout process.
-    ///
-    /// This should be called once all items have been added to the memu.
-    pub fn layout(&mut self, world: &mut ecs::World) {
-        // TODO: layout all the things!
     }
 
     /// Deletes all widget entities from the menu.
@@ -126,11 +120,11 @@ impl<TData, TReturn> Menu<TData, TReturn> {
         let style = world.read_resource::<Style>();
 
         let (_button_id, button) = initialize_button(text, &style)
-            .with_position(0.0, self.next_place)
+            .with_position(0.0, self.next_y_offset)
             .with_tab_order(self.next_tab_order)
             .build_from_world(&world);
 
-        self.next_place -= style.button.height + 10.0;
+        self.next_y_offset -= style.button.height + MARGIN;
         self.next_tab_order += 1;
         self.add_owned_button(&button);
         self.observers.add(button.image_entity, on_press);
@@ -138,7 +132,7 @@ impl<TData, TReturn> Menu<TData, TReturn> {
 
     /// Adds a separator between the current content.
     pub fn add_separator(&mut self, _world: &mut ecs::World) {
-        self.next_place = self.next_place - 20.0;
+        self.next_y_offset -= SEPARATOR_HEIGHT;
     }
 
     // Adds the entities in the provided button to the list of owned entities.

@@ -139,6 +139,7 @@ impl Grid {
     ///       |   |
     ///       a   c
     /// ```
+    #[allow(clippy::many_single_char_names)] // Diagram above describes the single character names.
     pub fn lines(&self) -> [Line; 4] {
         let square_size = self.square_size();
         let a = Point3::new(self.origin.x + square_size, self.origin.y, self.origin.z);

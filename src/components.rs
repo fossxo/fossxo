@@ -91,6 +91,7 @@ impl ecs::Component for MouseHoverDebugBox {
 }
 
 /// Indicates when the mouse hover graphics should be shown.
+#[allow(dead_code)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum MouseHoverVisibility {
     /// Do not show the mouse hover.

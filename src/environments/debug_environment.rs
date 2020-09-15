@@ -33,6 +33,7 @@ pub struct DebugOptions {
 
 impl DebugOptions {
     /// Enables all available debugging options.
+    #[allow(dead_code)]
     pub fn enable_all() -> Self {
         Self {
             grid: true,
@@ -192,7 +193,7 @@ impl Environment for DebugEnvironment {
         }
     }
 
-    #[post(self.entities.len() == 0)]
+    #[post(self.entities.is_empty())]
     fn delete(&mut self, world: &mut World) {
         // Delete all entities.
         let result = world.delete_entities(self.entities.as_slice());
