@@ -4,9 +4,11 @@
 //! game controls.
 
 mod entity_observers;
+mod game_controls;
 mod menu;
 mod style;
 
 use entity_observers::*;
+pub use game_controls::*;
 pub use menu::*;
 pub use style::*;

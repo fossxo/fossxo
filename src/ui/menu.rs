@@ -141,6 +141,7 @@ impl<TData, TReturn> Menu<TData, TReturn> {
         self.next_place = self.next_place - 20.0;
     }
 
+    // Adds the entities in the provided button to the list of owned entities.
     fn add_owned_button(&mut self, button: &UiButton) {
         self.owned_entities.push(button.text_entity);
         self.owned_entities.push(button.image_entity);

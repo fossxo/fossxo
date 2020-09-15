@@ -1,4 +1,4 @@
-use amethyst::{core::ecs, core::timing::Time, input, prelude::*, ui};
+use amethyst::{core::ecs, core::timing::Time, input, prelude::*};
 use contracts::*;
 use open_ttt_lib as ttt;
 use std::time::Duration;
@@ -7,6 +7,7 @@ use crate::components;
 use crate::environments::*;
 use crate::events;
 use crate::resources;
+use crate::ui;
 
 use super::MainMenu;
 
@@ -30,9 +31,7 @@ pub struct Game {
     options: GameStateOptions,
     // Entities the game state owns that need deleted when the state exits.
     owned_entities: Vec<ecs::Entity>,
-    // The UI root entity.
-    // status_text: Option<ui::UiLabel>,
-    menu_button: Option<ecs::Entity>,
+    game_controls: Option<ui::GameControls<Self, NextState>>,
 }
 
 impl<'a, 'b> Game {
@@ -41,8 +40,7 @@ impl<'a, 'b> Game {
         Self {
             options,
             owned_entities: Vec::new(),
-            // status_text: None,
-            menu_button: None,
+            game_controls: None,
         }
     }
 
@@ -77,32 +75,6 @@ impl<'a, 'b> Game {
         self.owned_entities.push(ai_player_entity);
     }
 
-    fn create_status_text(&mut self, world: &mut World) {
-        let (_id, label) = ui::UiLabelBuilder::<u32>::new("")
-            .with_anchor(ui::Anchor::TopLeft)
-            .with_align(ui::Anchor::MiddleLeft)
-            .with_size(600.0, 84.0)
-            // The position is slightly past the 1/2 way part so the text is not
-            // right at the edge of the screen.
-            .with_position(310.0, -20.0)
-            .with_font_size(20.0)
-            .with_text_color([1.0, 1.0, 1.0, 1.0])
-            .build_from_world(world);
-        self.owned_entities.push(label.text_entity);
-
-        // Create the game state entity that gets updated to reflect the state of the game.
-        let extra_information = self.game_state_extra_information();
-        self.owned_entities.push(
-            world
-                .create_entity()
-                .with(components::GameStateText {
-                    ui_text: label.text_entity,
-                    extra_information,
-                })
-                .build(),
-        );
-    }
-
     fn game_state_extra_information(&mut self) -> Vec<String> {
         match self.options {
             GameStateOptions::Multiplayer => vec![String::from("Multiplayer")],
@@ -117,21 +89,6 @@ impl<'a, 'b> Game {
                 single_player_info
             }
         }
-    }
-
-    fn create_menu_button(&mut self, world: &mut World) {
-        // TODO: load a hamburger menu icon here instead of text.
-        let size = 48.0;
-        let (_button_id, button) = ui::UiButtonBuilder::<(), u32>::new("")
-            .with_anchor(ui::Anchor::TopRight)
-            .with_position(-size / 2.0, -size / 2.0)
-            .with_size(size, size)
-            .with_image(ui::UiImage::SolidColor([0.5, 0.5, 0.5, 1.0]))
-            .with_hover_image(ui::UiImage::SolidColor([0.8, 0.8, 0.8, 1.0]))
-            .build_from_world(&world);
-        self.owned_entities.push(button.text_entity);
-        self.owned_entities.push(button.image_entity);
-        self.menu_button = Some(button.image_entity);
     }
 
     // Deletes all owned entities from the world.
@@ -158,12 +115,8 @@ impl<'a, 'b> Game {
                 // Update the game with the player's position and let systems know the time of this update.
                 game_logic.game.do_move(position).unwrap();
                 game_logic.last_move_time = data.world.fetch::<Time>().absolute_time();
-
-                // TODO: Update the display.
-                // TODO: check for game over?
-                println!("Player: {:?} moved to position {:?}", player, position);
-                println!("\n{}\n", game_logic.game.board());
-                println!("Game state: {:?}", game_logic.game.state());
+                log::debug!("player: {:?} moved to position {:?}", player, position);
+                log::debug!("game state: {:?}", game_logic.game.state());
 
                 Some((
                     components::Mark {
@@ -190,21 +143,44 @@ impl<'a, 'b> Game {
                     .write_resource::<Option<Environments>>()
                     .replace(environments);
             }
+
+            // Show the game over button if the game is complete.
+            if let Some(game_controls) = self.game_controls.as_mut() {
+                if state.is_game_over() {
+                    game_controls.show_game_over_button(data.world, Self::on_start_next_game);
+                }
+            }
         }
 
         Trans::None
     }
 
+    fn is_start_next_game_key_down(&self, window_event: &events::WindowEvent) -> bool {
+        // TODO: NumpadEnter does not seem to be working on Debian, try on Windows.
+        input::is_key_down(window_event, input::VirtualKeyCode::Return)
+            || input::is_key_down(window_event, input::VirtualKeyCode::NumpadEnter)
+            || input::is_key_down(window_event, input::VirtualKeyCode::Space)
+    }
+
+    fn can_start_next_game(&self, world: &World) -> bool {
+        let game_logic = world.read_resource::<resources::GameLogic>();
+        game_logic.game.state().is_game_over()
+    }
+
     // Handles window related events.
     fn handle_window_event(
         &mut self,
-        _data: StateData<'_, GameData<'a, 'b>>,
+        data: StateData<'_, GameData<'a, 'b>>,
         window_event: &events::WindowEvent,
     ) -> Trans<GameData<'a, 'b>, events::StateEvent> {
         if input::is_close_requested(window_event) {
             Trans::Quit
         } else if input::is_key_down(window_event, input::VirtualKeyCode::Escape) {
             Trans::Switch(Box::new(MainMenu::new()))
+        } else if self.is_start_next_game_key_down(window_event)
+            && self.can_start_next_game(data.world)
+        {
+            self.on_start_next_game(data.world).as_trans()
         } else {
             Trans::None
         }
@@ -213,22 +189,43 @@ impl<'a, 'b> Game {
     // Handles UI related events.
     fn handle_ui_event(
         &mut self,
-        _data: StateData<'_, GameData<'a, 'b>>,
+        data: StateData<'_, GameData<'a, 'b>>,
         ui_event: &events::UiEvent,
     ) -> Trans<GameData<'a, 'b>, events::StateEvent> {
-        if ui_event.event_type == ui::UiEventType::Click {
-            // Determine which handler to call by comparing the target entity with
-            // the those corresponding to our buttons.
-            if Some(ui_event.target) == self.menu_button {
-                return self.on_menu_button_click();
+        if let Some(game_controls) = self.game_controls.as_mut() {
+            if let Some(callback) = game_controls.handle_ui_event(data.world, ui_event) {
+                let next_state = callback(self, data.world);
+                return next_state.as_trans();
             }
         }
-
         Trans::None
     }
 
-    fn on_menu_button_click(&mut self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
-        Trans::Switch(Box::new(MainMenu::new()))
+    // Called when the user wishes to start the next game.
+    fn on_start_next_game(&mut self, world: &mut World) -> NextState {
+        // Tell the game logic to start the next game.
+        {
+            let mut game_logic = world.fetch_mut::<resources::GameLogic>();
+            game_logic.last_move_time = world.fetch::<Time>().absolute_time();
+            game_logic.game.start_next_game();
+        }
+
+        // Show the next environment.
+        let environments = { world.write_resource::<Option<Environments>>().take() };
+        if let Some(mut environments) = environments {
+            environments.show_random(world);
+            // Be sure to return the environment when done.
+            world
+                .write_resource::<Option<Environments>>()
+                .replace(environments);
+        }
+
+        // Hide the game over button.
+        if let Some(game_controls) = self.game_controls.as_mut() {
+            game_controls.hide_game_over_button(world);
+        }
+
+        NextState::None
     }
 }
 
@@ -268,14 +265,21 @@ impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for Game {
         }
 
         // Create the UI elements.
-        self.create_status_text(data.world);
-        self.create_menu_button(data.world);
+        let mut game_controls = ui::GameControls::new();
+        game_controls.set_menu_button(data.world, |_, _| NextState::MainMenu);
+        game_controls.set_status(data.world, self.game_state_extra_information());
+        self.game_controls = Some(game_controls);
     }
 
     #[post(self.owned_entities.is_empty())]
     fn on_stop(&mut self, data: StateData<'_, GameData<'a, 'b>>) {
         // Remove entities we created from the world.
         self.delete_owned_entities(data.world);
+
+        // Delete the game controls.
+        if let Some(mut game_controls) = self.game_controls.take() {
+            game_controls.delete(data.world);
+        }
 
         let mut environments = { data.world.write_resource::<Option<Environments>>().take() };
         if let Some(mut environments) = environments {
@@ -325,5 +329,21 @@ impl<'a, 'b> State<GameData<'a, 'b>, events::StateEvent> for Game {
         data.data.update(&data.world);
 
         Trans::None
+    }
+}
+
+// Helper type for selecting the next state to transition to.
+enum NextState {
+    None,
+    MainMenu,
+}
+
+impl<'a, 'b> NextState {
+    // Converts the next state variant into a state transition.
+    fn as_trans(&self) -> Trans<GameData<'a, 'b>, events::StateEvent> {
+        match self {
+            Self::None => Trans::None,
+            Self::MainMenu => Trans::Switch(Box::new(MainMenu::new())),
+        }
     }
 }

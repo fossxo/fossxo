@@ -26,6 +26,11 @@ impl<TData, TReturn> EntityObservers<TData, TReturn> {
         self.observers.insert(entity, callback);
     }
 
+    /// Removes the associated callback for the given entity.
+    pub fn remove_observer(&mut self, entity: ecs::Entity) {
+        self.observers.remove(&entity);
+    }
+
     /// Gets the callback associated with the provided entity.
     ///
     /// None is returned if no callback is found.
@@ -79,5 +84,18 @@ mod tests {
         let actual_data = callback.unwrap()(&mut expected_data, &mut world);
 
         assert_eq!(actual_data, expected_data);
+    }
+
+    #[test]
+    fn entity_observers_remove_should_remove_callback() {
+        let mut world = build_world();
+        let entity = world.create_entity().build();
+        let mut observers: EntityObservers<i32, i32> = EntityObservers::new();
+        observers.add_observer(entity, |data, _world| *data);
+
+        observers.remove_observer(entity);
+
+        let callback = observers.observer(entity);
+        assert!(callback.is_none());
     }
 }

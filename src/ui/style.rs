@@ -1,8 +1,10 @@
 //! Holds UI styles
 
-use amethyst::assets::{AssetStorage, Loader};
+use amethyst::assets::{AssetStorage, Handle, Loader};
 use amethyst::prelude::*;
+use amethyst::renderer::{ImageFormat, Texture};
 use amethyst::ui::{get_default_font, FontAsset, FontHandle, UiImage};
+use std::path::Path;
 
 /// Loads the UI style and places it in the world.
 pub fn load_style(world: &mut World) {
@@ -40,8 +42,17 @@ pub fn load_style(world: &mut World) {
         press: UiImage::SolidColor([0.15, 0.15, 0.15, 1.0]),
     };
 
+    let hamburger_icon_hover = load_texture(world, "hamburger-icon-hover.png");
+    let hamburger_button = HamburgerButtonStyle {
+        size: 48.0,
+        normal: UiImage::Texture(load_texture(world, "hamburger-icon-normal.png")),
+        hover: UiImage::Texture(hamburger_icon_hover.clone()),
+        press: UiImage::Texture(hamburger_icon_hover.clone()),
+    };
+
     let ui_style = Style {
         button,
+        hamburger_button,
         title_text,
         menu,
         paragraph: label.clone(),
@@ -51,9 +62,22 @@ pub fn load_style(world: &mut World) {
     world.insert(ui_style);
 }
 
+fn load_texture(world: &World, name: &str) -> Handle<Texture> {
+    let path = Path::new("textures").join(name);
+    let loader = world.read_resource::<Loader>();
+    let texture_storage = world.read_resource::<AssetStorage<Texture>>();
+    loader.load(
+        path.to_string_lossy(),
+        ImageFormat::default(),
+        (),
+        &texture_storage,
+    )
+}
+
 #[derive(Clone)]
 pub(super) struct Style {
     pub button: ButtonStyle,
+    pub hamburger_button: HamburgerButtonStyle,
     pub title_text: TextStyle,
     pub menu: MenuStyle,
     pub paragraph: TextStyle,
@@ -65,6 +89,14 @@ pub(super) struct ButtonStyle {
     pub text: TextStyle,
     pub width: f32,
     pub height: f32,
+    pub normal: UiImage,
+    pub hover: UiImage,
+    pub press: UiImage,
+}
+
+#[derive(Clone)]
+pub(super) struct HamburgerButtonStyle {
+    pub size: f32,
     pub normal: UiImage,
     pub hover: UiImage,
     pub press: UiImage,
