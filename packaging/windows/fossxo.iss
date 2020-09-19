@@ -16,7 +16,7 @@ AppVersion={#VERSION}
 AppPublisherURL={#HOMEPAGE}
 
 WizardStyle=modern
-OutputBaseFilename="{#NAME}-setup"
+OutputBaseFilename="{#NAME}-setup-{#VERSION}"
 OutputDir="{#TARGET_DIR}"
 
 ; Support installing in non-admin mode
