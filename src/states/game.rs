@@ -11,6 +11,10 @@ use crate::ui;
 
 use super::MainMenu;
 
+// How long after the player moves before the AI should move.
+// A small delay gives the impression of "thinking".
+const AI_MOVE_DELAY_SECONDS: f32 = 0.25;
+
 /// Holds the options for the game state.
 pub enum GameStateOptions {
     /// Play a single player game with the provided difficulty and player mark.
@@ -65,7 +69,7 @@ impl<'a, 'b> Game {
         let mut ai_player_component = components::AiPlayer::new(difficulty);
         // A little bit of delay is added to the AI player to give the impression thinking
         // about the next move.
-        ai_player_component.move_delay = Duration::from_secs_f32(0.4);
+        ai_player_component.move_delay = Duration::from_secs_f32(AI_MOVE_DELAY_SECONDS);
         let ai_player_entity = world
             .create_entity()
             .with(player)

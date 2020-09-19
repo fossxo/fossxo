@@ -31,7 +31,7 @@ webbrowser = "0.5"
 version = "0.15"
 default-features = false
 features = ["animation", "audio", "renderer", "vulkan"]
-# TODO add "no-slow-safety-checks" feature for release builds
+# Mac users: replace "vulkan" in the line above to "metal".
 
 [dev-dependencies]
 approx = "0.3"

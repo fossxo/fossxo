@@ -82,7 +82,7 @@ impl<TData, TReturn> Menu<TData, TReturn> {
             -40.0,
             1.0,
             800.0,
-            50.0,
+            60.0,
         );
 
         let title_entity = world.create_entity().with(text).with(transform).build();

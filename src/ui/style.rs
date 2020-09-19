@@ -18,13 +18,13 @@ pub fn load_style(world: &mut World) {
 
     let title_text = TextStyle {
         font: font.clone(),
-        font_size: 75.0,
+        font_size: 60.0,
         color: white,
     };
 
     let label = TextStyle {
         font,
-        font_size: 50.0,
+        font_size: 45.0,
         color: white,
     };
 
