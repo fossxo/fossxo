@@ -1,3 +1,0 @@
-# FossXO
-
-Hello World! 
