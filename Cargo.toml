@@ -1,0 +1,37 @@
+[package]
+name = "fossxo"
+version = "0.1.0"
+edition = "2018"
+authors = ["James Richey <james.richey+fossxo@imaginaryphase.com>"]
+license = "MIT OR Apache-2.0"
+
+description = "Free and open-source tic-tac-toe."
+keywords = ["game", "tic-tac-toe"]
+categories = ["games"]
+
+repository = "https://github.com/fossxo/fossxo.git"
+homepage = "https://github.com/fossxo/fossxo"
+documentation = "https://github.com/fossxo/fossxo"
+readme = "README.md"
+
+default-run = "fossxo"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+contracts = "0.5"
+log = "0.4"
+structopt = "0.3"
+open_ttt_lib = "0.2"
+serde = { version = "1", features = ["derive"] }
+os_info = { version = "2.0", default-features = false }
+rand = "0.7"
+webbrowser = "0.5"
+
+[dependencies.amethyst]
+version = "0.15"
+default-features = false
+features = ["animation", "audio", "renderer", "vulkan"]
+# Mac users: replace "vulkan" in the line above to "metal".
+
+[dev-dependencies]
+approx = "0.3"

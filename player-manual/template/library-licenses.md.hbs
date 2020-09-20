@@ -1,0 +1,35 @@
+# License Information
+
+This page lists the licenses of the libraries used by FossXO.
+
+
+## Overview of licenses
+
+<ul>
+{{~#each overview~}}
+  <li><a href="#{{id}}">{{name}}</a> ({{count}})</li>
+{{/each}}
+</ul>
+
+
+## All license text
+
+{{#each licenses}}
+<h3 id="{{id}}">{{name}}</h3>
+
+**Used by:**
+
+{{#each used_by~}}
+- <span id="{{crate.name}}-{{crate.version}}"></span> [{{crate.name}} {{crate.version}}]({{#if crate.repository}} {{crate.repository}} {{else}} https://crates.io/crates/{{crate.name}} {{/if}})
+{{/each}}
+
+<div class="license-text">
+
+```text
+{{{text}}}
+```
+
+</div>
+
+{{/each}}
+

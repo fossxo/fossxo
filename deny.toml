@@ -1,0 +1,80 @@
+# cargo-deny configuration file. See the cargo-deny for details.
+#
+# Note that all fields that take a lint level have these possible values:
+# * deny - An error will be produced and the check will fail
+# * warn - A warning will be produced, but the check will not fail
+# * allow - No warning or error will be produced, though in some cases a note
+# will be
+
+
+# This section is considered when running `cargo deny check advisories`
+# More documentation for the advisories section can be found here:
+# https://embarkstudios.github.io/cargo-deny/checks/advisories/cfg.html
+[advisories]
+db-path = "~/.cargo/advisory-db"
+db-url = "https://github.com/rustsec/advisory-db"
+vulnerability = "deny"
+unmaintained = "warn"
+yanked = "deny"
+notice = "warn"
+ignore = [
+    # Amethyst is using some unmaintained libraies. We acknowledge
+    # this issue and ignore these warnings until Amethyst can be updated.
+    "RUSTSEC-2020-0020",    # stb_truetype
+    "RUSTSEC-2020-0036",    # failure
+]
+
+# This section is considered when running `cargo deny check licenses`
+# More documentation for the licenses section can be found here:
+# https://embarkstudios.github.io/cargo-deny/checks/licenses/cfg.html
+[licenses]
+unlicensed = "deny"
+# Note: please keep this list synchronized with the accepted list in about.toml.
+allow = [
+    "Apache-2.0",
+    "MPL-2.0",
+
+    # BSD type licenses.
+    "MIT",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "FTL",
+    "ISC",
+    "Zlib",
+
+    # Public domain type licenses.
+    "Unlicense",
+    "CC0-1.0",
+]
+copyleft = "deny"
+default = "deny"
+confidence-threshold = 0.8
+exceptions = []
+
+
+# This section is considered when running `cargo deny check bans`.
+# More documentation about the 'bans' section can be found here:
+# https://embarkstudios.github.io/cargo-deny/checks/bans/cfg.html
+[bans]
+# The Amethyst engine pulls in a lot of crates, some of them are duplicates,
+# e.g. the rand crate. Thus we do allow duplicates.
+multiple-versions = "allow"
+wildcards = "warn"
+highlight = "all"
+# List of crates that are allowed. Use with care!
+allow = []
+# List of crates to deny
+deny = []
+# Certain crates/versions that will be skipped when doing duplicate detection.
+skip = []
+
+
+# This section is considered when running `cargo deny check sources`.
+# More documentation about the 'sources' section can be found here:
+# https://embarkstudios.github.io/cargo-deny/checks/sources/cfg.html
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+# Only crates from the official crates.io registry are allowed.
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

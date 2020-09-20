@@ -1,0 +1,15 @@
+.licenses-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.license-used-by {
+    margin-top: -10px;
+}
+
+.license-text > pre{
+    max-height: 200px;
+    overflow-y: scroll;
+    white-space: pre-wrap;
+}

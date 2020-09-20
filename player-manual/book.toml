@@ -1,0 +1,16 @@
+[book]
+authors = ["James Richey"]
+language = "en"
+multilingual = false
+src = "src"
+title = "FossXO Manual"
+
+[build]
+build-dir = "../target/player-manual"
+create-missing = false
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "navy"
+mathjax-support = false
+additional-css = ["player-manual.css"]

@@ -1,0 +1,200 @@
+# This file controls how cargo-make runs.
+
+# ====================================
+# High level tasks for different users
+# ====================================
+
+[env]
+# By default do not include back trace info.
+RUST_BACKTRACE = { unset = true }
+FOSSXO_VERSION = "${CARGO_MAKE_PROJECT_VERSION}"
+CRATE_ROOT_DIR = "${CARGO_MAKE_WORKING_DIRECTORY}"
+FOSSXO_HOMEPAGE = "${CARGO_MAKE_CRATE_HOMEPAGE}"
+FOSSXO_DESCRIPTION = "${CARGO_MAKE_CRATE_DESCRIPTION}"
+
+[tasks.default]
+# The default task is to build and run the game for end users.
+description = "Default task."
+alias = "_user-build"
+
+[tasks._user-build]
+description = "Builds and runs the game in release mode."
+dependencies = [
+    "_build-player-manual",
+    "_run-release",
+]
+
+
+[tasks.dev]
+description = "Runs the typical build, test, and check steps for developers."
+alias = "_dev"
+
+[tasks._dev]
+dependencies = [
+    "_fmt",
+    "_test-quick",
+    "_clippy",
+    "_deny",
+]
+
+
+[tasks.test]
+description = "Runs the complete test suite."
+alias = "_test"
+
+[tasks._test]
+dependencies = [
+    "_coverage",
+    "_test-quick-release",
+    "_test-ignored-release",
+    "_deny",
+]
+
+
+[tasks.pr-check]
+description = "Helper for running checks before a pull request."
+alias = "_pr-check"
+
+[tasks._pr-check]
+# Run the strict checks and then complete test suite.
+dependencies = [
+    "_build-strict",
+    "_test-quick",
+    "_clippy-strict",
+    "_deny",
+    "_fmt-check",
+    "_build-player-manual",
+    "_test",
+]
+
+
+[tasks.ci]
+# Note: the CI steps treads all warnings as errors.
+description = "Rust the CI steps."
+alias = "_ci"
+
+[tasks._ci]
+dependencies = [
+    "_build-strict",
+    "_test-quick",
+    "_deny",
+    "_clippy-strict",
+    "_fmt-check",
+]
+
+
+[tasks.package]
+description = "Packages the application."
+alias = "_package"
+
+[tasks._package]
+dependencies = [
+    "_build-player-manual",
+    "_build-release",
+    "_build_package",
+]
+
+
+
+# ==========================================
+# Individual build steps steps defined below
+# ==========================================
+# cargo-make ships with a large number of default tasks that are enabled by
+# default. The tasks defined here override the properties of the default tasks.
+# Therefore, custom tasks in  this file are prefixed with an underscore
+# prevent conflicts with the builtin tasks.
+
+[tasks._build]
+command = "cargo"
+args = ["build"]
+
+[tasks._build-strict]
+command = "cargo"
+env = { "RUSTFLAGS" = "-D warnings" }
+args = ["build"]
+
+
+# TODO add "no-slow-safety-checks" feature for release builds
+[tasks._build-release]
+command = "cargo"
+args = ["build", "--release"]
+
+[tasks._run-release]
+command = "cargo"
+args = ["run", "--release"]
+
+
+[tasks._test-quick]
+command = "cargo"
+args = ["test"]
+
+[tasks._test-quick-release]
+command = "cargo"
+args = ["test", "--release"]
+
+[tasks._test-ignored-release]
+command = "cargo"
+args = ["test", "--release", "--", "--ignored"]
+
+
+[tasks._clippy]
+command = "cargo"
+args = ["clippy"]
+dependencies = ["_install-clippy"]
+
+[tasks._clippy-strict]
+command = "cargo"
+args = ["clippy", "--", "-D", "warnings"]
+dependencies = ["_install-clippy"]
+
+[tasks._install-clippy]
+ignore_errors = true
+install_crate = { rustup_component_name = "clippy", binary = "cargo-clippy", test_arg = "--help" }
+
+
+[tasks._fmt]
+command = "cargo"
+args = ["fmt"]
+dependencies = ["_install-rustfmt"]
+
+[tasks._fmt-check]
+command = "cargo"
+args = ["fmt", "--all", "--", "--check"]
+dependencies = ["_install-rustfmt"]
+
+[tasks._install-rustfmt]
+ignore_errors = true
+install_crate = { rustup_component_name = "rustfmt", binary = "rustfmt", test_arg = "--help" }
+
+
+[tasks._doc]
+command = "cargo"
+args = ["doc"]
+
+
+[tasks._coverage.linux]
+command = "cargo"
+args = ["tarpaulin", "--out", "Html"]
+
+
+[tasks._deny]
+command = "cargo"
+args = ["deny", "check"]
+
+
+[tasks._build-player-manual]
+command = "mdbook"
+install_crate = { crate_name = "mdbook", binary = "mdbook", test_arg = "--help" }
+args = ["build", "player-manual"]
+dependencies = ["_build-player-manual-license-files"]
+
+[tasks._build-player-manual-license-files]
+install_crate = { crate_name = "cargo-about", binary = "cargo-about", test_arg = "--help" }
+command = "cargo"
+args = ["run", "--bin", "generate-license"]
+
+
+[tasks._build_package.windows]
+command = "ISCC"
+args = ["packaging\\windows\\fossxo.iss"]
+
