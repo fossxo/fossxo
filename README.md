@@ -1,7 +1,8 @@
 # FossXO
+[![Build Status](https://travis-ci.com/fossxo/fossxo.svg?branch=release)](https://travis-ci.com/fossxo/fossxo)
 [![unsafe forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
 
-![FossXO blueprint](blueprint.png)
+![FossXO screenshot](screenshot.png)
 
 FossXO is a unique take on the classic game of tic-tac-toe.
 
